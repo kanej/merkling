@@ -1,0 +1,34 @@
+{
+  "name": "merkling",
+  "version": "0.1.0",
+  "description": "JS Object to IPLD mapping layer",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "standard && jest"
+  },
+  "keywords": [
+    "ipfs"
+  ],
+  "author": "John Kane <john@kanej.me>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "cids": "^0.5.2",
+    "ipfs": "^0.27.5"
+  },
+  "devDependencies": {
+    "cz-conventional-changelog": "^2.1.0",
+    "jest": "^22.0.6",
+    "standard": "^10.0.3"
+  },
+  "standard": {
+    "env": [
+      "jest"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
