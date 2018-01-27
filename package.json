@@ -4,7 +4,7 @@
   "description": "JS Object to IPLD mapping layer",
   "main": "src/index.js",
   "scripts": {
-    "test": "standard && jest"
+    "test": "standard && jest --runInBand"
   },
   "keywords": [
     "ipfs"
@@ -14,6 +14,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "cids": "^0.5.2",
+    "immutable": "^3.8.2",
     "ipfs": "^0.27.5"
   },
   "devDependencies": {

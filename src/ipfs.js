@@ -6,9 +6,10 @@ const Promise = require('bluebird')
 const setupNode = () => {
   return new Promise((resolve, reject) => {
     const node = new IPFS({
-      silent: true,
       config: {
-        silent: true
+        Addresses: {
+          Swarm: []
+        }
       }
     })
 
@@ -19,13 +20,29 @@ const setupNode = () => {
 }
 
 const shutdownNode = (node) => {
-  node.stop(() => {
-    console.log('finished.')
-    process.exit()
+  return new Promise((resolve, reject) => {
+    node.stop((err) => {
+      if (err) {
+        return reject(err)
+      }
+
+      resolve()
+    })
+  })
+}
+
+const withIpfs = (callback) => {
+  var withIpfsNode
+  return setupNode().then(node => {
+    withIpfsNode = node
+    return callback(node)
+  }).then(() => {
+    return shutdownNode(withIpfsNode)
   })
 }
 
 module.exports = {
   setupNode: setupNode,
-  shutdownNode: shutdownNode
+  shutdownNode: shutdownNode,
+  withIpfs: withIpfs
 }
