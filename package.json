@@ -2,6 +2,14 @@
   "name": "merkling",
   "version": "0.1.0",
   "description": "JS Object to IPLD mapping layer",
+  "homepage": "https://github.com/kanej/merkling",
+  "bugs": {
+    "url": "https://github.com/kanej/merkling/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kanej/merkling.git"
+  },
   "main": "src/index.js",
   "scripts": {
     "test": "standard && jest --runInBand",
