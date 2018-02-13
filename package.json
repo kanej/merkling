@@ -4,10 +4,12 @@
   "description": "JS Object to IPLD mapping layer",
   "main": "src/index.js",
   "scripts": {
-    "test": "standard && jest --runInBand"
+    "test": "standard && jest --runInBand",
+    "docs": "documentation build --format html --theme node_modules/clean-documentation-theme --o docs",
+    "docs-dev": "documentation serve --watch --theme node_modules/clean-documentation-theme"
   },
   "keywords": [
-    "ipfs"
+    "ipfs", "ipld"
   ],
   "author": "John Kane <john@kanej.me>",
   "license": "MIT",
@@ -18,7 +20,9 @@
     "ipfs": "^0.27.5"
   },
   "devDependencies": {
+    "clean-documentation-theme": "^0.5.2",
     "cz-conventional-changelog": "^2.1.0",
+    "documentation": "^5.4.0",
     "jest": "^22.0.6",
     "standard": "^10.0.3"
   },

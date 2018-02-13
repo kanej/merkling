@@ -2,9 +2,13 @@
 
 const Promise = require('bluebird')
 const CID = require('cids')
-
 const { IpldProxy } = require('./ipld')
 
+/**
+ * Merkling entrypoint
+ * @constructor
+ * @param {Object} options setup options for this merkling instance
+ */
 const Merkling = function (options) {
   if (!options.ipfs) {
     throw Error('IPFS must be passed as an option to Merkling')
@@ -13,26 +17,52 @@ const Merkling = function (options) {
   this.ipfs = options.ipfs
   this.ipldProxy = new IpldProxy()
 
-  // save
-  // if normal object - convert to dirty then *save* object
-  // if saved or unloaded - do nothing
-  // if dirty then recursively_save on properties then persist the object itself
+  /**
+   * Create an IPLD node from a js object.
+   * The IPLD node must be saved before it is persisted.
+   * @param {Object} obj a js object
+   * @returns {Object} an unsaved IPLD node
+   */
+  this.create = (obj) => {
+    return this.ipldProxy.createDirtyNode(obj)
+  }
 
-  // recursively_save
-  // if normal object - recursively save on properties
-  // if saved or unloaded - do nothing
-  // if dirty then recursively *save*
-
-  this.save = (elem) => {
-    if (!elem) {
+  /**
+   * Persist a js object or IPLD node to the IPLD graph
+   * @param {Object} obj a js object or IPLD node
+   */
+  this.save = (obj) => {
+    if (!obj) {
       throw Error('Argument exception, trying to save null or undefined')
     }
 
-    const objToPersist = this.ipldProxy.isIpld(elem)
-      ? elem
-      : this.ipldProxy.createDirtyNode(elem)
+    const objToPersist = this.ipldProxy.isIpld(obj)
+      ? obj
+      : this.ipldProxy.createDirtyNode(obj)
 
     return this._persist(objToPersist)
+  }
+
+  /**
+   * Given an IPLD id, retrieve the value from the IPLD graph
+   * as a js object
+   * @param {Object|String} cid
+   * @returns {Object} an IPLD node
+   */
+  this.get = (cid) => {
+    return new Promise((resolve, reject) => {
+      this.ipfs.dag.get(cid, (err, block) => {
+        if (err) {
+          reject(err)
+        }
+
+        const id = CID.isCID(cid) ? cid : new CID(cid)
+        const node = this._substituteMerkleLinkProxies(block.value)
+        const merkleProxy = this.ipldProxy.createSavedNode(id, node)
+
+        resolve(merkleProxy)
+      })
+    })
   }
 
   this._persist = (elem) => {
@@ -61,26 +91,6 @@ const Merkling = function (options) {
         })
       })
     })
-  }
-
-  this.get = (cid) => {
-    return new Promise((resolve, reject) => {
-      this.ipfs.dag.get(cid, (err, block) => {
-        if (err) {
-          reject(err)
-        }
-
-        const id = CID.isCID(cid) ? cid : new CID(cid)
-        const node = this._substituteMerkleLinkProxies(block.value)
-        const merkleProxy = this.ipldProxy.createSavedNode(id, node)
-
-        resolve(merkleProxy)
-      })
-    })
-  }
-
-  this.create = (obj) => {
-    return this.ipldProxy.createDirtyNode(obj)
   }
 
   this._substituteMerkleLinks = (elem) => {
