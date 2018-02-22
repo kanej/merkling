@@ -37,6 +37,7 @@
   "cz-conventional-changelog": "^2.1.0",
   "documentation": "^5.4.0",
   "jest": "^22.0.6",
+  "karma": "^2.0.0",
   "pre-commit": "^1.2.2",
   "standard": "^10.0.3",
   "webpack": "^3.11.0",
