@@ -1,6 +1,5 @@
 'use strict'
 
-const Promise = require('bluebird')
 const CID = require('cids')
 const { IpldProxy } = require('./ipld')
 
@@ -10,7 +9,7 @@ const { IpldProxy } = require('./ipld')
  * @param {Object} options setup options for this merkling instance
  */
 const Merkling = function (options) {
-  if (!options.ipfs) {
+  if (!options || !options.ipfs) {
     throw Error('IPFS must be passed as an option to Merkling')
   }
 
@@ -36,11 +35,16 @@ const Merkling = function (options) {
       throw Error('Argument exception, trying to save null or undefined')
     }
 
-    const objToPersist = this.ipldProxy.isIpld(obj)
-      ? obj
-      : this.ipldProxy.createDirtyNode(obj)
-
-    return this._persist(objToPersist)
+    if (this.ipldProxy.isIpld(obj)) {
+      if (this.ipldProxy.isPersisted(obj)) {
+        return new Promise(resolve => resolve(obj))
+      } else {
+        return this._persist(obj)
+      }
+    } else {
+      const dirtyNode = this.ipldProxy.createDirtyNode(obj)
+      return this._persist(dirtyNode)
+    }
   }
 
   /**
@@ -77,7 +81,11 @@ const Merkling = function (options) {
           : null
       }).filter(Boolean)
 
-      return Promise.all(subpersists).then(() => {
+      return Promise.all(subpersists).then((values) => {
+        if (!this.ipldProxy.isIpld(elem)) {
+          return resolve(elem)
+        }
+
         const dagNode = this._substituteMerkleLinks(elem)
 
         this.ipfs.dag.put(dagNode, { format: 'dag-cbor', hashAlg: 'sha2-256' }, (err, cid) => {
@@ -89,7 +97,7 @@ const Merkling = function (options) {
 
           return resolve(elem)
         })
-      })
+      }).catch(reject)
     })
   }
 
@@ -102,10 +110,6 @@ const Merkling = function (options) {
       }
 
       if (this.ipldProxy.isIpld(dagNode[key])) {
-        if (!this.ipldProxy.isPersisted(dagNode[key])) {
-          throw Error('Attempting substitution on unpersisted ipld node')
-        }
-
         dagNode[key] = this._convertToMerkleLinkObject(dagNode[key])
       } else {
         this._substituteMerkleLinks(dagNode[key])

@@ -1,6 +1,6 @@
 'use strict'
 
-const { setupNode, shutdownNode } = require('../src/ipfs')
+const { setupNode, shutdownNode } = require('./ipfsHelpers')
 const Merkling = require('../src/merkling')
 
 describe('Building up graph with saves', () => {

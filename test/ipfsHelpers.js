@@ -1,7 +1,6 @@
 'use strict'
 
 const IPFS = require('ipfs')
-const Promise = require('bluebird')
 
 const setupNode = () => {
   return new Promise((resolve, reject) => {

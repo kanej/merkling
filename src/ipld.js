@@ -26,10 +26,6 @@ const IpldProxyExtension = {
       return target[key]
     }
 
-    if (!target[statusSymbol]) {
-      throw Error(`IPLD node <${target[cidSymbol].toBaseEncodedString}> not loaded so access '${key.toString()}' failed`)
-    }
-
     return target[key]
   },
 
@@ -124,22 +120,22 @@ class IpldProxy {
         this._saveDirty(node, options)
         break
       default:
-        throw Error('Unkown transition ' + transition)
+        throw Error('Unknown transition ' + transition)
     }
   }
 
   extract (obj) {
     if (!this.isIpld(obj)) {
-      return Object.assign({}, obj)
-    } else {
-      const status = obj[statusSymbol]
-      obj[statusSymbol] = this.TEMP
-      const objCopy = Object.assign({}, obj)
-      delete objCopy[statusSymbol]
-      delete objCopy[cidSymbol]
-      obj[statusSymbol] = status
-      return objCopy
+      return obj
     }
+
+    const status = obj[statusSymbol]
+    obj[statusSymbol] = this.TEMP
+    const objCopy = Object.assign({}, obj)
+    delete objCopy[statusSymbol]
+    delete objCopy[cidSymbol]
+    obj[statusSymbol] = status
+    return objCopy
   }
 
   _loadLink (node, { object }) {

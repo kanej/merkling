@@ -1,7 +1,13 @@
 'use strict'
 
-const { setupNode, shutdownNode } = require('../src/ipfs')
+const { setupNode, shutdownNode } = require('./ipfsHelpers')
 const Merkling = require('../src/merkling')
+
+describe('merkling', () => {
+  test('must be initialized with an ipfs node', () => {
+    expect(() => new Merkling({})).toThrow('IPFS must be passed as an option to Merkling')
+  })
+})
 
 describe('api tests', () => {
   var node = null
@@ -24,13 +30,77 @@ describe('api tests', () => {
     merkle = new Merkling({ipfs: node})
   })
 
+  test('Create an IPLD node', () => {
+    const simple = {name: 'example'}
+    const ipldNode = merkle.create(simple)
+    expect(ipldNode).not.toBeNull()
+    expect(ipldNode.name).toBe('example')
+    expect(ipldNode._cid).toBeFalsy()
+  })
+
   test('Save a simple object', (done) => {
-    const simple = {name: 'Example'}
+    const simple = {name: 'example'}
     merkle.save(simple).then(returned => {
       expect(returned).not.toBeNull()
-      expect(returned.name).toBe('Example')
+      expect(returned.name).toBe('example')
       expect(returned._cid).not.toBeNull()
-      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
+      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAtrAB9iH9bSo5oReZ8UWz25Cq3xMYVh5QGFBWWgadvWWx')
+      done()
+    })
+  })
+
+  test('Save a complicated object', (done) => {
+    const complicated = { name: 'example', sub: { sub2: { text: 'boom' } } }
+    merkle.save(complicated).then(returned => {
+      expect(returned).not.toBeNull()
+      expect(returned.name).toBe('example')
+      expect(returned._cid).not.toBeNull()
+      expect(returned.sub.sub2.text).toBe('boom')
+      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAyeE95VoFGKMki7efKX5vtraoevyEGoEAQPLgmdHHg2tH')
+      done()
+    })
+  })
+
+  test('Save an unsaved IPLD node', (done) => {
+    const simple = {name: 'example'}
+    const node = merkle.create(simple)
+    merkle.save(node).then(returned => {
+      expect(returned).not.toBeNull()
+      expect(returned.name).toBe('example')
+      expect(returned._cid).not.toBeNull()
+      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAtrAB9iH9bSo5oReZ8UWz25Cq3xMYVh5QGFBWWgadvWWx')
+      done()
+    })
+  })
+
+  test('Save a saved IPLD node', async (done) => {
+    const simple = { name: 'example' }
+    const node = merkle.create(simple)
+    const savedNode = await merkle.save(node)
+    const savedAgain = await merkle.save(savedNode)
+    expect(savedAgain).not.toBeNull()
+    expect(savedAgain.name).toBe('example')
+    expect(savedAgain._cid).not.toBeNull()
+    expect(savedAgain._cid.toBaseEncodedString()).toBe('zdpuAtrAB9iH9bSo5oReZ8UWz25Cq3xMYVh5QGFBWWgadvWWx')
+    done()
+  })
+
+  test('Saving null throws', () => {
+    expect(() => { merkle.save(null) }).toThrow('Argument exception, trying to save null or undefined')
+  })
+
+  test('Saving with an underlying ipfs error bubbles up', (done) => {
+    merkle.ipfs = {
+      dag: {
+        put: (node, options, cb) => { cb(Error('IPFS Exploded!')) }
+      }
+    }
+
+    merkle.save({ text: 'example' }).then(returned => {
+      expect(returned).toBeNull()
+    }).catch(err => {
+      expect(err).not.toBeFalsy()
+      expect(err.message).toBe('IPFS Exploded!')
       done()
     })
   })
@@ -41,6 +111,22 @@ describe('api tests', () => {
       expect(returned.name).toBe('Example')
       expect(returned._cid).not.toBeNull()
       expect(returned._cid.toBaseEncodedString()).toBe('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
+      done()
+    })
+  })
+
+  test('retrieving with an ipfs error bubbles up', (done) => {
+    merkle.ipfs = {
+      dag: {
+        get: (cid, cb) => { cb(Error('IPFS Exploded!')) }
+      }
+    }
+
+    merkle.get('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF').then(returned => {
+      expect(returned).toBeNull()
+    }).catch(err => {
+      expect(err).not.toBeFalsy()
+      expect(err.message).toBe('IPFS Exploded!')
       done()
     })
   })
@@ -64,15 +150,16 @@ describe('api tests', () => {
 
   test('Read a linked object', (done) => {
     const vlad = {name: 'vlad'}
-    const don = {name: 'don'}
+    const don = {name: 'don', business: {type: 'hotels'}}
     merkle.save(vlad).then(savedVlad => {
       don.knows = savedVlad
       merkle.save(don).then(savedDon => {
         merkle.get(savedDon._cid).then(ipfsDon => {
           expect(ipfsDon).not.toBeNull()
           expect(ipfsDon.name).toBe('don')
+          expect(ipfsDon.business).toEqual({type: 'hotels'})
           expect(ipfsDon._cid).not.toBeNull()
-          expect(ipfsDon._cid.toBaseEncodedString()).toBe('zdpuAsJvqKFE2XfU63LTfhrhjEAGMCVjQsJKnXjqBoaGMmP29')
+          expect(ipfsDon._cid.toBaseEncodedString()).toBe('zdpuAn6nLxAHH3pfh9QyMwaqJwzAfDvPn6yi45SQn9MX4xPfA')
           expect(ipfsDon.knows).not.toBeNull()
           expect(ipfsDon.knows._cid).not.toBeUndefined()
           expect(ipfsDon.knows._cid.toBaseEncodedString()).toBe('zdpuAze7Z1QRUeuXFFQ1gNjQ6UnyHfjoz5RHLtA4baJjBLAkq')

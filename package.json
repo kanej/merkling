@@ -1,52 +1,63 @@
 {
-  "name": "merkling",
-  "version": "0.1.0",
-  "description": "JS Object to IPLD mapping layer",
-  "homepage": "https://github.com/kanej/merkling",
-  "bugs": {
-    "url": "https://github.com/kanej/merkling/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kanej/merkling.git"
-  },
-  "main": "src/index.js",
-  "scripts": {
-    "test": "standard && jest --runInBand",
-    "docs": "documentation build --format html --theme node_modules/clean-documentation-theme --o docs",
-    "docs-dev": "documentation serve --watch --theme node_modules/clean-documentation-theme"
-  },
-  "pre-commit": [
-    "test"
-  ],
-  "keywords": [
-    "ipfs",
-    "ipld"
-  ],
-  "author": "John Kane <john@kanej.me>",
-  "license": "MIT",
-  "dependencies": {
-    "bluebird": "^3.5.1",
-    "cids": "^0.5.2",
-    "immutable": "^3.8.2",
-    "ipfs": "^0.27.5"
-  },
-  "devDependencies": {
-    "clean-documentation-theme": "^0.5.2",
-    "cz-conventional-changelog": "^2.1.0",
-    "documentation": "^5.4.0",
-    "jest": "^22.0.6",
-    "pre-commit": "^1.2.2",
-    "standard": "^10.0.3"
-  },
-  "standard": {
-    "env": [
-      "jest"
-    ]
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+ "name": "merkling",
+ "version": "0.1.0",
+ "description": "JS Object to IPLD mapping layer",
+ "homepage": "https://github.com/kanej/merkling",
+ "bugs": {
+  "url": "https://github.com/kanej/merkling/issues"
+ },
+ "repository": {
+  "type": "git",
+  "url": "https://github.com/kanej/merkling.git"
+ },
+ "main": "src/index.js",
+ "scripts": {
+  "test": "standard .\\src\\**\\*.js .\\test\\**\\*.js && jest --runInBand --coverage",
+  "build": "webpack",
+  "dev": "webpack-dev-server --open",
+  "docs": "documentation build --format html --theme node_modules/clean-documentation-theme --o docs",
+  "docs-dev": "documentation serve --watch --theme node_modules/clean-documentation-theme"
+ },
+ "pre-commit": [
+  "test"
+ ],
+ "keywords": [
+  "ipfs",
+  "ipld"
+ ],
+ "author": "John Kane <john@kanej.me>",
+ "license": "MIT",
+ "dependencies": {
+  "cids": "^0.5.2",
+  "ipfs": "^0.27.5"
+ },
+ "devDependencies": {
+  "clean-documentation-theme": "^0.5.2",
+  "clean-webpack-plugin": "^0.1.18",
+  "cz-conventional-changelog": "^2.1.0",
+  "documentation": "^5.4.0",
+  "jest": "^22.0.6",
+  "pre-commit": "^1.2.2",
+  "standard": "^10.0.3",
+  "webpack": "^3.11.0",
+  "webpack-dev-server": "^2.11.1"
+ },
+ "standard": {
+  "env": [
+   "jest"
+  ]
+ },
+ "jest": {
+  "collectCoverageFrom": [
+   "src/**/*.{js,jsx}",
+   "!src/index.js",
+   "!<rootDir>/node_modules/",
+   "!<rootDir>/test/"
+  ]
+ },
+ "config": {
+  "commitizen": {
+   "path": "./node_modules/cz-conventional-changelog"
   }
+ }
 }

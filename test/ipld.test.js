@@ -36,6 +36,10 @@ describe('IPLD Proxy', () => {
     test('has a status of \'unloaded\'', () => {
       expect(link[Symbol.for('merkling#status')]).toBe(ipld.UNLOADED)
     })
+
+    test('cannot have its properties set', () => {
+      expect(() => { link.prop = 'example' }).toThrow(TypeError)
+    })
   })
 
   describe('a dirty ipld node', () => {
@@ -87,6 +91,12 @@ describe('IPLD Proxy', () => {
 
     test('has a status of \'saved\'', () => {
       expect(node[Symbol.for('merkling#status')]).toBe(ipld.SAVED)
+    })
+  })
+
+  describe('a poorly constructed ipld node', () => {
+    test('due to an unknown status', () => {
+      expect(() => ipld.create(exampleIpfsHash, 'WRONG', {})).toThrow('Unrecognized status WRONG')
     })
   })
 
@@ -158,6 +168,34 @@ describe('IPLD Proxy', () => {
 
       test('has a status of \'dirty\'', () => {
         expect(node[Symbol.for('merkling#status')]).toBe(ipld.DIRTY)
+      })
+    })
+
+    describe('guards the state of the nodes', () => {
+      const exampleObj = { text: 'example' }
+
+      test('only unloaded can be loaded', () => {
+        const savedNode = ipld.createSavedNode(exampleIpfsHash, exampleObj)
+
+        expect(() => {
+          ipld.transition(savedNode, { 'transition': 'load', 'object': exampleObj })
+        }).toThrowError('Transition not allowed load in state SAVED')
+      })
+
+      test('only dirty can be saved', () => {
+        const savedNode = ipld.createSavedNode(exampleIpfsHash, exampleObj)
+
+        expect(() => {
+          ipld.transition(savedNode, { transition: 'save', cid: new CID(exampleIpfsHash) })
+        }).toThrowError('Transition not allowed save in state SAVED')
+      })
+
+      test('by limiting to only known transitions', () => {
+        const savedNode = ipld.createSavedNode(exampleIpfsHash, exampleObj)
+
+        expect(() => {
+          ipld.transition(savedNode, { transition: 'UNKNOWN' })
+        }).toThrowError('Unknown transition UNKNOWN')
       })
     })
   })
