@@ -31,57 +31,57 @@ describe('api tests', () => {
   })
 
   test('Create an IPLD node', () => {
-    const simple = {name: 'example'}
+    const simple = {name: 'Example'}
     const ipldNode = merkle.create(simple)
     expect(ipldNode).not.toBeNull()
-    expect(ipldNode.name).toBe('example')
+    expect(ipldNode.name).toBe('Example')
     expect(ipldNode._cid).toBeFalsy()
   })
 
   test('Save a simple object', (done) => {
-    const simple = {name: 'example'}
+    const simple = {name: 'Example'}
     merkle.save(simple).then(returned => {
       expect(returned).not.toBeNull()
-      expect(returned.name).toBe('example')
+      expect(returned.name).toBe('Example')
       expect(returned._cid).not.toBeNull()
-      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAtrAB9iH9bSo5oReZ8UWz25Cq3xMYVh5QGFBWWgadvWWx')
+      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
       done()
     })
   })
 
   test('Save a complicated object', (done) => {
-    const complicated = { name: 'example', sub: { sub2: { text: 'boom' } } }
+    const complicated = { name: 'Example', sub: { sub2: { text: 'boom' } } }
     merkle.save(complicated).then(returned => {
       expect(returned).not.toBeNull()
-      expect(returned.name).toBe('example')
+      expect(returned.name).toBe('Example')
       expect(returned._cid).not.toBeNull()
       expect(returned.sub.sub2.text).toBe('boom')
-      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAyeE95VoFGKMki7efKX5vtraoevyEGoEAQPLgmdHHg2tH')
+      expect(returned._cid.toBaseEncodedString()).toBe('zdpuArr3FwUkkzeBh6MCdS2pSxiLxVHYJ3fCkNLivGWVrRMBD')
       done()
     })
   })
 
   test('Save an unsaved IPLD node', (done) => {
-    const simple = {name: 'example'}
+    const simple = {name: 'Example'}
     const node = merkle.create(simple)
     merkle.save(node).then(returned => {
       expect(returned).not.toBeNull()
-      expect(returned.name).toBe('example')
+      expect(returned.name).toBe('Example')
       expect(returned._cid).not.toBeNull()
-      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAtrAB9iH9bSo5oReZ8UWz25Cq3xMYVh5QGFBWWgadvWWx')
+      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
       done()
     })
   })
 
   test('Save a saved IPLD node', async (done) => {
-    const simple = { name: 'example' }
+    const simple = { name: 'Example' }
     const node = merkle.create(simple)
     const savedNode = await merkle.save(node)
     const savedAgain = await merkle.save(savedNode)
     expect(savedAgain).not.toBeNull()
-    expect(savedAgain.name).toBe('example')
+    expect(savedAgain.name).toBe('Example')
     expect(savedAgain._cid).not.toBeNull()
-    expect(savedAgain._cid.toBaseEncodedString()).toBe('zdpuAtrAB9iH9bSo5oReZ8UWz25Cq3xMYVh5QGFBWWgadvWWx')
+    expect(savedAgain._cid.toBaseEncodedString()).toBe('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
     done()
   })
 

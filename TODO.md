@@ -7,7 +7,7 @@ Chores
 * [x] Add code coverage
 * [ ] Add standard readme
 * [ ] Add circleci build
-* [ ]Rejig webpack build
+* [ ] Rejig webpack build
     - [ ] Exclude ipfs
     - [ ] full and minified in dist
     - [ ] html plugin for dev
