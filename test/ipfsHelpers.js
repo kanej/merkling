@@ -5,6 +5,7 @@ const IPFS = require('ipfs')
 const setupNode = () => {
   return new Promise((resolve, reject) => {
     const node = new IPFS({
+      repo: './.ipfs-test',
       config: {
         Addresses: {
           Swarm: []
