@@ -2,24 +2,15 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:9.5
-    working_directory: ~/repo
-
+      - image: 'circleci/node:latest'
     steps:
       - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
-      - run: npm install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-        
-      - run: npm test
+      - run:
+          name: install
+          command: npm install
+      - run:
+          name: test
+          command: npm test
+      - run:
+          name: release
+          command: npm run semantic-release || true
