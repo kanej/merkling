@@ -16,6 +16,7 @@
     "test": "standard .\\src\\**\\*.js .\\test\\**\\*.js && jest --runInBand --coverage",
     "build": "webpack",
     "dev": "webpack-dev-server --open",
+    "docs-readme": "documentation readme --section=API src/merkling.js",
     "docs": "documentation build --format html --theme node_modules/clean-documentation-theme --o docs",
     "docs-dev": "documentation serve --watch --theme node_modules/clean-documentation-theme",
     "semantic-release": "semantic-release"
