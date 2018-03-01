@@ -75,13 +75,15 @@ const Merkling = function (options) {
         return resolve(elem)
       }
 
-      const subpersists = Object.keys(elem).map(key => {
-        return typeof elem[key] === 'object'
-          ? this._persist(elem[key])
-          : null
-      }).filter(Boolean)
+      const subpersists = Object.keys(elem)
+        .filter(key => elem[key])
+        .map(key => {
+          return typeof elem[key] === 'object'
+            ? this._persist(elem[key])
+            : null
+        }).filter(Boolean)
 
-      return Promise.all(subpersists).then((values) => {
+      return Promise.all(subpersists).then(() => {
         if (!this.ipldProxy.isIpld(elem)) {
           return resolve(elem)
         }
@@ -102,6 +104,10 @@ const Merkling = function (options) {
   }
 
   this._substituteMerkleLinks = (elem) => {
+    if (!elem) {
+      return elem
+    }
+
     const dagNode = this.ipldProxy.extract(elem)
 
     Object.keys(dagNode).forEach(key => {

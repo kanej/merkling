@@ -85,6 +85,18 @@ describe('api tests', () => {
     done()
   })
 
+  test('Save an object with a nested null', async (done) => {
+    const simple = { name: 'Example', next: null }
+    const node = merkle.create(simple)
+    const savedNode = await merkle.save(node)
+    expect(savedNode).not.toBeNull()
+    expect(savedNode.name).toBe('Example')
+    expect(savedNode._cid).not.toBeNull()
+    expect(savedNode._cid.toBaseEncodedString()).toBe('zdpuAm1ZHnidGxaUbTExkEeEYZRG6jxNPsgeZNe53L6hB5Ny6')
+    expect(savedNode.next).toBeNull()
+    done()
+  })
+
   test('Saving null throws', () => {
     expect(() => { merkle.save(null) }).toThrow('Argument exception, trying to save null or undefined')
   })

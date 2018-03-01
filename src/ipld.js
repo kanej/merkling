@@ -62,11 +62,11 @@ class IpldProxy {
   }
 
   isIpld (obj) {
-    return this.allowedStatuses.includes(obj[statusSymbol])
+    return obj && this.allowedStatuses.includes(obj[statusSymbol])
   }
 
   isPersisted (obj) {
-    return obj[statusSymbol] === this.UNLOADED || obj[statusSymbol] === this.SAVED
+    return obj && (obj[statusSymbol] === this.UNLOADED || obj[statusSymbol] === this.SAVED)
   }
 
   create (cid, status, obj) {
