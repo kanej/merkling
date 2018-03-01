@@ -152,7 +152,7 @@ const Merkling = function (options) {
   }
 
   this._isMerkleLinkObject = (obj) => {
-    return (typeof obj === 'object') && obj.hasOwnProperty('/')
+    return obj && (typeof obj === 'object') && obj.hasOwnProperty('/')
   }
 
   return this

@@ -127,6 +127,17 @@ describe('api tests', () => {
     })
   })
 
+  test('Retrieve an object with null properties', (done) => {
+    merkle.get('zdpuAm1ZHnidGxaUbTExkEeEYZRG6jxNPsgeZNe53L6hB5Ny6').then(returned => {
+      expect(returned).not.toBeNull()
+      expect(returned.name).toBe('Example')
+      expect(returned._cid).not.toBeNull()
+      expect(returned._cid.toBaseEncodedString()).toBe('zdpuAm1ZHnidGxaUbTExkEeEYZRG6jxNPsgeZNe53L6hB5Ny6')
+      expect(returned.next).toBeNull()
+      done()
+    })
+  })
+
   test('retrieving with an ipfs error bubbles up', (done) => {
     merkle.ipfs = {
       dag: {
