@@ -74,6 +74,8 @@ withIpfs(async ipfs => {
     -   [create](#create)
     -   [save](#save)
     -   [get](#get)
+    -   [load](#load)
+    -   [resolve](#resolve)
 
 ### Merkling
 
@@ -112,6 +114,28 @@ as a js object
 -   `cid` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** 
 
 Returns **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** an IPLD node
+
+#### load
+
+Given an IPLD id, create an unloaded IPLD node, that can
+be used in persisting
+
+**Parameters**
+
+-   `cid` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))** 
+
+Returns **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** an unloaded IPLD node
+
+#### resolve
+
+Takes an unloaded IPLD node and loads in the
+object for the node's hash from IPLD
+
+**Parameters**
+
+-   `obj` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** an unloaded IPLD node
+
+Returns **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** a saved IPLD node
 
 ## Maintainers
 

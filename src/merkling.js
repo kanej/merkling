@@ -69,6 +69,45 @@ const Merkling = function (options) {
     })
   }
 
+  /**
+   * Given an IPLD id, create an unloaded IPLD node, that can
+   * be used in persisting
+   * @param {Object|String} cid
+   * @returns {Object} an unloaded IPLD node
+   */
+  this.load = (cid) => {
+    return this.ipldProxy.createLinkNode(cid)
+  }
+
+  /**
+   * Takes an unloaded IPLD node and loads in the
+   * object for the node's hash from IPLD
+   * @param {Object} obj an unloaded IPLD node
+   * @returns {Object} a saved IPLD node
+   */
+  this.resolve = (obj) => {
+    return new Promise((resolve, reject) => {
+      if (!this.ipldProxy.isIpld(obj) || this.ipldProxy.isSaved(obj)) {
+        return resolve(obj)
+      }
+
+      if (this.ipldProxy.isDirty(obj)) {
+        throw Error('Cannot resolve a dirty ipld node')
+      }
+
+      return this.ipfs.dag.get(obj._cid, (err, block) => {
+        if (err) {
+          reject(err)
+        }
+
+        const node = this._substituteMerkleLinkProxies(block.value)
+        this.ipldProxy.transition(obj, { transition: 'load', object: node })
+
+        resolve(obj)
+      })
+    })
+  }
+
   this._persist = (elem) => {
     return new Promise((resolve, reject) => {
       if (this.ipldProxy.isPersisted(elem)) {

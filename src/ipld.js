@@ -69,6 +69,14 @@ class IpldProxy {
     return obj && (obj[statusSymbol] === this.UNLOADED || obj[statusSymbol] === this.SAVED)
   }
 
+  isSaved (obj) {
+    return obj && obj[statusSymbol] === this.SAVED
+  }
+
+  isDirty (obj) {
+    return obj && obj[statusSymbol] === this.DIRTY
+  }
+
   create (cid, status, obj) {
     if (!this.allowedStatuses.includes(status)) {
       throw Error('Unrecognized status ' + status)

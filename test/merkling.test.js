@@ -200,4 +200,62 @@ describe('api tests', () => {
       done()
     })
   })
+
+  test('Resolving an unloaded ipld node', async (done) => {
+    const unloaded = await merkle.load('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
+    await merkle.resolve(unloaded)
+
+    expect(unloaded).not.toBeNull()
+    expect(unloaded.name).toBe('Example')
+    expect(unloaded._cid).not.toBeNull()
+    expect(unloaded._cid.toBaseEncodedString()).toBe('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
+    done()
+  })
+
+  test('Resolving a pojo returns the pojo', async (done) => {
+    const pojo = { text: 'dull' }
+    Object.freeze(pojo)
+    const returnedPojo = await merkle.resolve(pojo)
+
+    expect(returnedPojo).not.toBeNull()
+    expect(returnedPojo).toBe(pojo)
+    done()
+  })
+
+  test('Resolving a saved IPLD node returns the IPLD node immediately', async (done) => {
+    const savedNode = await merkle.get('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
+    Object.freeze(savedNode)
+    const returnedNode = await merkle.resolve(savedNode)
+
+    expect(returnedNode).not.toBeNull()
+    expect(returnedNode).toBe(savedNode)
+    done()
+  })
+
+  test('Resolving a dirty IPLD node throws', async (done) => {
+    const dirtyNode = await merkle.create({ text: 'dull' })
+
+    await expect(merkle.resolve(dirtyNode))
+      .rejects
+      .toThrow('Cannot resolve a dirty ipld node')
+
+    done()
+  })
+
+  test('Resolving with an ipfs error bubbles up', (done) => {
+    merkle.ipfs = {
+      dag: {
+        get: (cid, cb) => { cb(Error('IPFS Exploded!')) }
+      }
+    }
+
+    const unloaded = merkle.load('zdpuAqrurk63wySXeaPtB2jPqFtfS3Zfdt7vAyeGCYwt7MPYF')
+    merkle.resolve(unloaded).then(returned => {
+      expect(returned).toBeNull()
+    }).catch(err => {
+      expect(err).not.toBeFalsy()
+      expect(err.message).toBe('IPFS Exploded!')
+      done()
+    })
+  })
 })
