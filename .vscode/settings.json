@@ -1,5 +1,9 @@
 {
     "javascript.validate.enable": false,
-    "standard.autoFixOnSave": true,
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "javascript.format.enable": false,
+    "prettier.eslintIntegration": true,
+    "search.exclude": {
+      "**/lib": true
+    }
 }

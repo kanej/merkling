@@ -13,8 +13,8 @@
   "main": "src/index.js",
   "scripts": {
     "pretest": "rimraf .\\.ipfs-test",
-    "test": "standard .\\src\\**\\*.js .\\test\\**\\*.js && jest --runInBand --coverage",
-    "build": "webpack",
+    "test": "jest --runInBand --coverage",
+    "build": "tsc",
     "dev": "webpack-dev-server --open",
     "docs-readme": "documentation readme --section=API src/merkling.js",
     "docs": "documentation build --format html --theme node_modules/clean-documentation-theme --o docs",
@@ -30,21 +30,31 @@
   ],
   "author": "John Kane <john@kanej.me>",
   "license": "MIT",
-  "dependencies": {
-    "cids": "^0.5.2",
-    "ipfs": "^0.27.5"
+  "peerDependencies": {
+    "ipfs": "^0.35.0"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.12",
+    "@typescript-eslint/eslint-plugin": "^1.7.0",
+    "@typescript-eslint/parser": "^1.7.0",
+    "awesome-typescript-loader": "^5.2.1",
     "clean-documentation-theme": "^0.5.2",
     "clean-webpack-plugin": "^0.1.18",
     "cz-conventional-changelog": "^2.1.0",
     "documentation": "^5.4.0",
-    "jest": "^22.0.6",
-    "karma": "^2.0.0",
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-node": "^9.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jest": "^24.8.0",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.2",
     "semantic-release": "^12.4.1",
-    "standard": "^10.0.3",
+    "source-map-loader": "^0.2.4",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.5",
     "webpack": "^3.11.0",
     "webpack-dev-server": "^2.11.1"
   },
@@ -54,15 +64,15 @@
     ]
   },
   "jest": {
-    "setupFiles": [
-      "./test/jestSetup.js"
-    ],
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/index.js",
       "!<rootDir>/node_modules/",
       "!<rootDir>/test/"
-    ]
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    }
   },
   "config": {
     "commitizen": {
@@ -70,6 +80,9 @@
     }
   },
   "release": {
-   "branch": "master"
- }
+    "branch": "master"
+  },
+  "dependencies": {
+    "esm": "^3.2.22"
+  }
 }
