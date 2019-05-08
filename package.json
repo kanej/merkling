@@ -14,6 +14,7 @@
   "scripts": {
     "pretest": "rimraf .\\.ipfs-test",
     "test": "jest --runInBand --coverage",
+    "lint": "eslint --fix .\\{src,test}\\**\\*.ts",
     "build": "tsc",
     "dev": "webpack-dev-server --open",
     "docs-readme": "documentation readme --section=API src/merkling.js",
@@ -22,6 +23,7 @@
     "semantic-release": "semantic-release"
   },
   "pre-commit": [
+    "lint",
     "test"
   ],
   "keywords": [
@@ -43,13 +45,16 @@
     "cz-conventional-changelog": "^2.1.0",
     "documentation": "^5.4.0",
     "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.2.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.17.2",
     "eslint-plugin-node": "^9.0.1",
+    "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "jest": "^24.8.0",
     "pre-commit": "^1.2.2",
+    "prettier": "^1.17.0",
     "rimraf": "^2.6.2",
     "semantic-release": "^12.4.1",
     "source-map-loader": "^0.2.4",

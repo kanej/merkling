@@ -1,8 +1,49 @@
 {
-    "parser": "@typescript-eslint/parser",
-    "extends": ["standard", "plugin:@typescript-eslint/recommended"],
-    "parserOptions": {
-      "ecmaVersion": 2018,
-      "sourceType": "module"
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "standard"
+  ],
+  "plugins": ["@typescript-eslint"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "@typescript-eslint/member-delimiter-style": [
+      "error",
+      {
+        "multiline": {
+          "delimiter": "none",
+          "requireLast": true
+        },
+        "singleline": {
+          "delimiter": "comma",
+          "requireLast": false
+        }
+      }
+    ],
+    "@typescript-eslint/indent": ["error", 2],
+    "space-before-function-paren": "off",
+    "@typescript-eslint/interface-name-prefix": ["error", "always"],
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      { "accessibility": "no-public" }
+    ]
+  },
+  "overrides": [
+    {
+      "files": "test/**/*.ts",
+      "rules": {
+        "@typescript-eslint/explicit-function-return-type": "off"
+      }
     }
+  ],
+  "env": {
+    "jest": true
+  },
+  "globals": {
+    "fetch": false
+  }
 }
