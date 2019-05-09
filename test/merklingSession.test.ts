@@ -138,27 +138,57 @@ describe('Session', () => {
       session = new MerklingSession({ ipfs: mockIpfs })
     })
 
-    describe('simple pojo', () => {
-      let simplePojo = Object.freeze({
-        text: 'example',
-        num: 5,
-        bool: true,
-        undefinedProp: undefined,
-        nullProp: null
+    describe('dirty', () => {
+      describe('simple pojo', () => {
+        let simplePojo = Object.freeze({
+          text: 'example',
+          num: 5,
+          bool: true,
+          undefinedProp: undefined,
+          nullProp: null
+        })
+
+        beforeEach(async () => {
+          mockIpfs.map(simplePojo, 'Q111111111111111')
+          proxy = session.create(simplePojo)
+          await session.save()
+        })
+
+        it('should mark the proxy as clean', () => {
+          expect(Merkling.isDirty(proxy)).toBe(false)
+        })
+
+        it('should set the cid against the proxy', () => {
+          expect(Merkling.cid(proxy)).toBe('Q111111111111111')
+        })
+
+        it('should save the object to IPFS', () => {
+          expect(mockIpfs.saveCalls).toBe(1)
+        })
       })
 
-      beforeEach(() => {
-        mockIpfs.map(simplePojo, 'Q111111111111111')
-        proxy = session.create(simplePojo)
-        session.save()
-      })
+      describe('clean', () => {
+        describe('simple pojo', () => {
+          let simplePojo = Object.freeze({
+            text: 'example',
+            num: 5,
+            bool: true,
+            undefinedProp: undefined,
+            nullProp: null
+          })
 
-      it('should mark the proxy as clean', () => {
-        expect(Merkling.isDirty(proxy)).toBe(false)
-      })
+          beforeEach(async () => {
+            mockIpfs.map(simplePojo, 'Q111111111111111')
+            proxy = session.create(simplePojo)
+            await session.save()
+          })
 
-      it('should set the cid against the proxy', () => {
-        expect(Merkling.cid(proxy)).toBe('Q111111111111111')
+          it('should not save to IPFS', async () => {
+            await session.save()
+
+            expect(mockIpfs.saveCalls).toBe(1)
+          })
+        })
       })
     })
   })

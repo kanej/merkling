@@ -1,9 +1,10 @@
-import MerklingSession, {
+import MerklingSession from './merklingSession'
+import {
   isProxySymbol,
   isIpldNodeSymbol,
   isDirtySymbol,
   getCidSymbol
-} from './merklingSession'
+} from './symbols'
 
 export interface IIpfsNode {
   put(state: {}): Promise<string>
@@ -47,9 +48,13 @@ export class Merkling {
     return !!proxy[isDirtySymbol]
   }
 
-  static cid(proxy: Proxy): string | null {
+  static cid(proxy: Proxy): string | null | undefined {
     if (!Merkling.isProxy(proxy)) {
-      return null
+      return undefined
+    }
+
+    if (!Merkling.isIpldNode(proxy)) {
+      return undefined
     }
 
     return proxy[getCidSymbol]
