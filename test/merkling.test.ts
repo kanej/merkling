@@ -1,12 +1,12 @@
-import MockIpfs from './mockIpfs'
 import { Merkling } from '../src/merkling'
 import MerklingSession from '../src/merklingSession'
+import setupMockIpfs from './mockIpfs'
 
 describe('Merkling', () => {
   let merkling: Merkling
 
   beforeEach(() => {
-    merkling = new Merkling({ ipfs: new MockIpfs() })
+    merkling = new Merkling({ ipfs: setupMockIpfs() })
   })
 
   describe('Creating a session', () => {

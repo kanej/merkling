@@ -1,12 +1,23 @@
 import MerklingSession from '../src/merklingSession'
-import { Merkling } from '../src/merkling'
-import MockIpfs from './mockIpfs'
+import { Merkling, ICid } from '../src/merkling'
+import setupMockIpfs, { MockIpfs } from './mockIpfs'
+
+const toCid = (text: string) => {
+  const cid: ICid = {
+    codec: 'example',
+    version: 1,
+    multihash: Buffer.from(text),
+    toBaseEncodedString: () => text
+  }
+
+  return cid
+}
 
 describe('Session', () => {
   let session: MerklingSession
 
   beforeEach(() => {
-    session = new MerklingSession({ ipfs: new MockIpfs() })
+    session = new MerklingSession({ ipfs: setupMockIpfs() })
   })
 
   describe('creating', () => {
@@ -134,7 +145,7 @@ describe('Session', () => {
     let mockIpfs: MockIpfs
 
     beforeEach(() => {
-      mockIpfs = new MockIpfs()
+      mockIpfs = setupMockIpfs()
       session = new MerklingSession({ ipfs: mockIpfs })
     })
 
@@ -149,7 +160,7 @@ describe('Session', () => {
         })
 
         beforeEach(async () => {
-          mockIpfs.map(simplePojo, 'Q111111111111111')
+          mockIpfs.map(simplePojo, toCid('Q111111111111111'))
           proxy = session.create(simplePojo)
           await session.save()
         })
@@ -159,11 +170,13 @@ describe('Session', () => {
         })
 
         it('should set the cid against the proxy', () => {
-          expect(Merkling.cid(proxy)).toBe('Q111111111111111')
+          const cid = Merkling.cid(proxy)
+          expect(cid).toBeTruthy()
+          expect((cid as ICid).toBaseEncodedString()).toBe('Q111111111111111')
         })
 
         it('should save the object to IPFS', () => {
-          expect(mockIpfs.saveCalls).toBe(1)
+          expect(mockIpfs.shared.saveCalls).toBe(1)
         })
       })
 
@@ -178,7 +191,7 @@ describe('Session', () => {
           })
 
           beforeEach(async () => {
-            mockIpfs.map(simplePojo, 'Q111111111111111')
+            mockIpfs.map(simplePojo, toCid('Q111111111111111'))
             proxy = session.create(simplePojo)
             await session.save()
           })
@@ -186,7 +199,7 @@ describe('Session', () => {
           it('should not save to IPFS', async () => {
             await session.save()
 
-            expect(mockIpfs.saveCalls).toBe(1)
+            expect(mockIpfs.shared.saveCalls).toBe(1)
           })
         })
       })

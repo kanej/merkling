@@ -65,4 +65,5 @@ typings/
 scratch.js
 read.js
 
-.ipfs-test/
+.test-ipfs/
+dist/

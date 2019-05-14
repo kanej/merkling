@@ -1,4 +1,4 @@
-import { IIpfsNode, Merkling } from './merkling'
+import { IIpfsNode, Merkling, ICid } from './merkling'
 import {
   IMerklingProxyRecord,
   MerklingProxyType,
@@ -7,15 +7,42 @@ import {
 } from './merklingProxyHandler'
 import { getStateSymbol, setCidSymbol } from './symbols'
 
-export default class MerklingSession {
+class IpfsWrapper {
   _ipfs: IIpfsNode
+
+  constructor(ipfs: IIpfsNode) {
+    this._ipfs = ipfs
+  }
+
+  async put(obj: {}): Promise<ICid> {
+    return new Promise(
+      // eslint-disable-next-line
+      (resolve, reject): any => {
+        return this._ipfs.dag.put(
+          obj,
+          { format: 'dag-cbor', hashAlg: 'sha3-512' },
+          // eslint-disable-next-line
+          (err: Error, cid: ICid): any => {
+            if (err) {
+              return reject(err)
+            }
+
+            return resolve(cid)
+          }
+        )
+      }
+    )
+  }
+}
+
+export default class MerklingSession {
+  _ipfs: IpfsWrapper
   _stateObjToProxy: WeakMap<{}, {}>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _roots: any[]
 
-  constructor(options: { ipfs: IIpfsNode }) {
-    const { ipfs } = options
-    this._ipfs = ipfs
+  constructor({ ipfs }: { ipfs: IIpfsNode }) {
+    this._ipfs = new IpfsWrapper(ipfs)
     this._stateObjToProxy = new WeakMap()
     this._roots = []
   }

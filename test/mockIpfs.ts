@@ -1,20 +1,47 @@
-import { IIpfsNode } from '../src/merkling'
+import { IIpfsNode, ICid } from '../src/merkling'
 
-export default class MockIpfs implements IIpfsNode {
+interface ISharedState {
   saveCalls: number
-  private _mappings: WeakMap<{}, string>
+  mappings: WeakMap<{}, ICid>
+}
 
-  constructor() {
-    this.saveCalls = 0
-    this._mappings = new WeakMap<{}, string>()
+export class MockIpfs implements IIpfsNode {
+  // eslint-disable-next-line
+  dag: any
+  shared: ISharedState
+
+  constructor(
+    shared: ISharedState,
+    // eslint-disable-next-line
+    dag: any
+  ) {
+    this.shared = shared
+    this.dag = dag
   }
 
-  async put(state: {}): Promise<string> {
-    this.saveCalls++
-    return this._mappings.get(state) || 'QUNREGISTERED'
+  map(obj: {}, cid: ICid) {
+    this.shared.mappings.set(obj, cid)
+  }
+}
+
+export default function setupMockIpfs() {
+  const shared = {
+    saveCalls: 0,
+    mappings: new WeakMap<{}, ICid>()
   }
 
-  map(obj: {}, cid: string) {
-    this._mappings.set(obj, cid)
+  const dag = {
+    put(state: {}, _options: {}, callback: Function): void {
+      shared.saveCalls++
+      const cid = shared.mappings.get(state) || {
+        codec: 'unknown',
+        version: 1,
+        multihash: Buffer.from('QUNREGISTERED')
+      }
+
+      callback(null, cid)
+    }
   }
+
+  return new MockIpfs(shared, dag)
 }

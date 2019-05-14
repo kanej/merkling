@@ -7,7 +7,16 @@ import {
 } from './symbols'
 
 export interface IIpfsNode {
-  put(state: {}): Promise<string>
+  dag: {
+    put: Function
+  }
+}
+
+export interface ICid {
+  codec: string
+  version: number
+  multihash: ArrayBuffer
+  toBaseEncodedString: () => string
 }
 
 export interface IMerklingOptions {
@@ -48,7 +57,7 @@ export class Merkling {
     return !!proxy[isDirtySymbol]
   }
 
-  static cid(proxy: Proxy): string | null | undefined {
+  static cid(proxy: Proxy): ICid | null | undefined {
     if (!Merkling.isProxy(proxy)) {
       return undefined
     }
