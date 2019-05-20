@@ -4,7 +4,12 @@ import { Merkling, ICid } from '../../src/merkling'
 const setupIpfsNode = () => {
   return new Promise((resolve: Function, reject: Function) => {
     const node = new IPFS({
-      repo: './.test-ipfs'
+      repo: './.test-ipfs',
+      config: {
+        Addresses: {
+          Swarm: []
+        }
+      }
     })
 
     return node.on('ready', (err: Error) => {
@@ -30,7 +35,7 @@ const shutdownIpfsNode = (node: any) => {
   })
 }
 
-describe('Saving a simple object', () => {
+describe('Persisting', () => {
   // eslint-disable-next-line
   let ipfs: any
   beforeAll(async () => {
@@ -45,7 +50,7 @@ describe('Saving a simple object', () => {
     await shutdownIpfsNode(ipfs)
   })
 
-  it('persists to IPFS', async () => {
+  it('saves an object with a text property', async () => {
     expect(ipfs).toBeTruthy()
     const merkling = new Merkling({ ipfs })
 
@@ -61,6 +66,25 @@ describe('Saving a simple object', () => {
     expect(cid).toBeTruthy()
     expect((cid as ICid).toBaseEncodedString()).toBe(
       'zBwWX5L5CfQVRtenLYbHXYCTVPjzToZKqpRrXCjVVcfXHYs15HQCq46ZoWHyhDgtzbwkF3vhnsc7Ub9EhfX7S4qupAZMf'
+    )
+  })
+
+  it('saves an object with a nested object', async () => {
+    expect(ipfs).toBeTruthy()
+    const merkling = new Merkling({ ipfs })
+
+    const session = merkling.createSession()
+
+    const proxy = session.create({
+      next: { text: 'Another' }
+    })
+
+    await session.save()
+    const cid = Merkling.cid(proxy)
+
+    expect(cid).toBeTruthy()
+    expect((cid as ICid).toBaseEncodedString()).toBe(
+      'zBwWX6oEurdDbZCjpHoogfoYp4xtCiLruWncdNrhQFrYCMVzhTEHTiGNAoWugrWv4BS6eDGLqc35vyc8YPszU2CGnQwn3'
     )
   })
 })
