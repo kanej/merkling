@@ -203,6 +203,17 @@ describe('Session', () => {
           })
         })
       })
+
+      describe('error', () => {
+        describe('on save', () => {
+          it('should throw', async () => {
+            mockIpfs.shared.errorOnPut = true
+            proxy = session.create({ text: 'boom' })
+            const savePromise = session.save()
+            await expect(savePromise).rejects.toThrow()
+          })
+        })
+      })
     })
   })
 

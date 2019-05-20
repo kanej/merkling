@@ -2,6 +2,7 @@ import { IIpfsNode, ICid } from '../src/merkling'
 
 interface ISharedState {
   saveCalls: number
+  errorOnPut: boolean
   mappings: WeakMap<{}, ICid>
 }
 
@@ -27,12 +28,18 @@ export class MockIpfs implements IIpfsNode {
 export default function setupMockIpfs() {
   const shared = {
     saveCalls: 0,
+    errorOnPut: false,
     mappings: new WeakMap<{}, ICid>()
   }
 
   const dag = {
     put(state: {}, _options: {}, callback: Function): void {
       shared.saveCalls++
+
+      if (shared.errorOnPut) {
+        return callback(new Error('Boom!'))
+      }
+
       const cid = shared.mappings.get(state) || {
         codec: 'unknown',
         version: 1,
