@@ -3,7 +3,9 @@ import { IIpfsNode, ICid } from '../src/merkling'
 interface ISharedState {
   saveCalls: number
   errorOnPut: boolean
-  mappings: WeakMap<{}, ICid>
+  errorOnGet: boolean
+  objToCidMapping: WeakMap<{}, ICid>
+  cidToObjMapping: Map<string, {}>
 }
 
 export class MockIpfs implements IIpfsNode {
@@ -20,16 +22,26 @@ export class MockIpfs implements IIpfsNode {
     this.dag = dag
   }
 
-  map(obj: {}, cid: ICid) {
-    this.shared.mappings.set(obj, cid)
+  mapObjToCid(obj: {}, cid: ICid) {
+    this.shared.objToCidMapping.set(obj, cid)
+  }
+
+  mapCidToObj(cid: ICid, obj: {}) {
+    this.shared.cidToObjMapping.set(cid.toBaseEncodedString(), {
+      cid: cid,
+      value: obj,
+      remainderPath: ''
+    })
   }
 }
 
 export default function setupMockIpfs() {
-  const shared = {
+  const shared: ISharedState = {
     saveCalls: 0,
     errorOnPut: false,
-    mappings: new WeakMap<{}, ICid>()
+    errorOnGet: false,
+    objToCidMapping: new WeakMap<{}, ICid>(),
+    cidToObjMapping: new Map<string, {}>()
   }
 
   const dag = {
@@ -40,13 +52,22 @@ export default function setupMockIpfs() {
         return callback(new Error('Boom!'))
       }
 
-      const cid = shared.mappings.get(state) || {
+      const cid = shared.objToCidMapping.get(state) || {
         codec: 'unknown',
         version: 1,
         multihash: Buffer.from('QUNREGISTERED')
       }
 
       callback(null, cid)
+    },
+    get(cid: string, callback: Function): void {
+      if (shared.errorOnGet) {
+        return callback(new Error('Boom!'))
+      }
+
+      const ipldNode = shared.cidToObjMapping.get(cid)
+
+      callback(null, ipldNode)
     }
   }
 

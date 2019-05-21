@@ -1,4 +1,4 @@
-import { IIpfsNode, Merkling, ICid } from './merkling'
+import { IIpfsNode, Merkling, ICid, IIpldNode } from './merkling'
 import {
   IMerklingProxyRecord,
   MerklingProxyType,
@@ -33,6 +33,25 @@ class IpfsWrapper {
       }
     )
   }
+
+  async get(hash: string): Promise<IIpldNode> {
+    return new Promise(
+      // eslint-disable-next-line
+      (resolve, reject): any => {
+        return this._ipfs.dag.get(
+          hash,
+          // eslint-disable-next-line
+          (err: Error, ipldNode: IIpldNode): any => {
+            if (err) {
+              return reject(err)
+            }
+
+            return resolve(ipldNode)
+          }
+        )
+      }
+    )
+  }
 }
 
 export default class MerklingSession {
@@ -59,6 +78,24 @@ export default class MerklingSession {
       cid: null,
       session: this,
       state: objState
+    }
+
+    const proxy = new Proxy(record, merklingProxyHandler)
+
+    this._roots.push(proxy)
+
+    return proxy
+  }
+
+  async get(hash: string): Promise<{}> {
+    const ipldNode = await this._ipfs.get(hash)
+
+    const record: IMerklingProxyRecord = {
+      type: MerklingProxyType.IPLD,
+      lifecycleState: MerklingLifecycleState.CLEAN,
+      cid: ipldNode.cid,
+      session: this,
+      state: ipldNode.value
     }
 
     const proxy = new Proxy(record, merklingProxyHandler)

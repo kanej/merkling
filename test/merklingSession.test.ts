@@ -160,7 +160,7 @@ describe('Session', () => {
         })
 
         beforeEach(async () => {
-          mockIpfs.map(simplePojo, toCid('Q111111111111111'))
+          mockIpfs.mapObjToCid(simplePojo, toCid('Q111111111111111'))
           proxy = session.create(simplePojo)
           await session.save()
         })
@@ -191,7 +191,7 @@ describe('Session', () => {
           })
 
           beforeEach(async () => {
-            mockIpfs.map(simplePojo, toCid('Q111111111111111'))
+            mockIpfs.mapObjToCid(simplePojo, toCid('Q111111111111111'))
             proxy = session.create(simplePojo)
             await session.save()
           })
@@ -235,6 +235,39 @@ describe('Session', () => {
       })
 
       test.todo('marks the ipld node as dirty')
+    })
+  })
+
+  describe('getting', () => {
+    // eslint-disable-next-line
+    let proxy: any
+    let mockIpfs: MockIpfs
+
+    beforeEach(async () => {
+      mockIpfs = setupMockIpfs()
+      mockIpfs.mapCidToObj(toCid('zxxxx'), { text: 'example' })
+      session = new MerklingSession({ ipfs: mockIpfs })
+      proxy = await session.get('zxxxx')
+    })
+
+    it('returns a Merkling proxy', () => {
+      expect(Merkling.isProxy(proxy)).toBe(true)
+    })
+
+    it('returns a proxy that is an IPLD node', () => {
+      expect(Merkling.isIpldNode(proxy)).toBe(true)
+    })
+
+    it('returns a proxy that can have its properties accessed', () => {
+      expect(proxy.text).toBe('example')
+    })
+
+    describe('error', () => {
+      it('should throw', async () => {
+        mockIpfs.shared.errorOnGet = true
+        const getPromise = session.get('zxxxx')
+        await expect(getPromise).rejects.toThrow()
+      })
     })
   })
 })

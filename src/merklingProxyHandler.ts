@@ -8,6 +8,7 @@ import {
   getCidSymbol,
   setCidSymbol
 } from './symbols'
+import { ICid } from './merkling'
 
 export enum MerklingLifecycleState {
   DIRTY = 'DIRTY',
@@ -22,7 +23,7 @@ export enum MerklingProxyType {
 export interface IMerklingProxyRecord {
   type: MerklingProxyType
   lifecycleState: MerklingLifecycleState
-  cid: string | null
+  cid: ICid | null
   session: MerklingSession
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: any
@@ -96,10 +97,10 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyRecord> = {
   set(
     target: IMerklingProxyRecord,
     key: string | number | symbol,
-    value: {} | string
+    value: ICid
   ): boolean {
     if (key === setCidSymbol) {
-      target.cid = value as string
+      target.cid = value
       target.lifecycleState = MerklingLifecycleState.CLEAN
       return true
     } else {
