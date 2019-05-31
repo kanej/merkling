@@ -1,39 +1,5 @@
-import IPFS from 'ipfs'
 import { Merkling, ICid } from '../../src/merkling'
-
-const setupIpfsNode = () => {
-  return new Promise((resolve: Function, reject: Function) => {
-    const node = new IPFS({
-      repo: './.test-ipfs',
-      config: {
-        Addresses: {
-          Swarm: []
-        }
-      }
-    })
-
-    return node.on('ready', (err: Error) => {
-      if (err) {
-        return reject(err)
-      }
-
-      return resolve(node)
-    })
-  })
-}
-
-// eslint-disable-next-line
-const shutdownIpfsNode = (node: any) => {
-  return new Promise((resolve: Function, reject: Function) => {
-    return node.stop((err: Error) => {
-      if (err) {
-        return reject(err)
-      }
-
-      return resolve()
-    })
-  })
-}
+import { setupIpfsNode, shutdownIpfsNode } from './helpers'
 
 const checkPersistAndReload = async (
   merkling: Merkling,

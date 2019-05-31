@@ -57,17 +57,19 @@ class IpfsWrapper {
 export default class MerklingSession {
   _ipfs: IpfsWrapper
   _stateObjToProxy: WeakMap<{}, {}>
+  _stateObjToParentRecord: WeakMap<{}, IMerklingProxyRecord>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _roots: any[]
 
   constructor({ ipfs }: { ipfs: IIpfsNode }) {
     this._ipfs = new IpfsWrapper(ipfs)
     this._stateObjToProxy = new WeakMap()
+    this._stateObjToParentRecord = new WeakMap()
     this._roots = []
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  create(objState: any): IMerklingProxyRecord | {} {
+  create<T>(objState: T): T {
     if (objState === null || typeof objState !== 'object') {
       return objState
     }
@@ -84,7 +86,8 @@ export default class MerklingSession {
 
     this._roots.push(proxy)
 
-    return proxy
+    // eslint-disable-next-line
+    return (proxy as any) as T
   }
 
   async get(hash: string): Promise<{}> {

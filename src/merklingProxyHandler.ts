@@ -91,6 +91,7 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyRecord> = {
     )
 
     target.session._stateObjToProxy.set(value, newProxy)
+    target.session._stateObjToParentRecord.set(value, target)
 
     return newProxy
   },
@@ -104,7 +105,25 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyRecord> = {
       target.lifecycleState = MerklingLifecycleState.CLEAN
       return true
     } else {
-      return Reflect.set(target.state, key, value)
+      let parentState: {} | undefined = target.state
+      while (
+        parentState &&
+        target.session._stateObjToParentRecord.has(parentState)
+      ) {
+        let parentRecord = target.session._stateObjToParentRecord.get(
+          parentState
+        ) as IMerklingProxyRecord
+
+        parentRecord.lifecycleState = MerklingLifecycleState.DIRTY
+        parentRecord.cid = null
+
+        parentState = parentRecord.state
+      }
+
+      target.lifecycleState = MerklingLifecycleState.DIRTY
+      target.cid = null
+      var result = Reflect.set(target.state, key, value)
+      return result
     }
   }
 }

@@ -12,7 +12,11 @@ describe('Merkling Proxy Handler', () => {
   let originalState: any
   beforeEach(() => {
     // eslint-disable-next-line
-    const mockSession: any = {}
+    const mockSession: any = {
+      _stateObjToParentRecord: {
+        has: () => false
+      }
+    }
 
     originalState = {
       text: 'example',

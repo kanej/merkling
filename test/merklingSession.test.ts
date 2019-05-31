@@ -219,22 +219,84 @@ describe('Session', () => {
 
   describe('updating', () => {
     // eslint-disable-next-line
-    let proxy: {}
+    let proxy: {
+      text: string
+      num: number
+      bool: boolean
+      undefinedProp: undefined
+      nullProp: null
+    }
+    let mockIpfs: MockIpfs
+
+    beforeEach(() => {
+      mockIpfs = setupMockIpfs()
+      session = new MerklingSession({ ipfs: mockIpfs })
+    })
 
     describe('simple pojo', () => {
-      let simplePojo = Object.freeze({
+      let simplePojo = {
         text: 'example',
         num: 5,
         bool: true,
         undefinedProp: undefined,
         nullProp: null
-      })
+      }
 
-      beforeEach(() => {
+      beforeEach(async () => {
         proxy = session.create(simplePojo)
+
+        await session.save()
+        proxy.text = 'updated'
       })
 
-      test.todo('marks the ipld node as dirty')
+      it('marks the IPLD node as dirty', () => {
+        expect(Merkling.isIpldNode(proxy)).toBe(true)
+        expect(Merkling.isDirty(proxy)).toBe(true)
+      })
+
+      it('removes the cid against the IPLD node', () => {
+        expect(Merkling.cid(proxy)).toBe(null)
+      })
+
+      it('persists to IPFS on save', async () => {
+        expect(mockIpfs.shared.saveCalls).toBe(1)
+        await session.save()
+        expect(mockIpfs.shared.saveCalls).toBe(2)
+      })
+    })
+
+    describe('nested pojo', () => {
+      let nested = {
+        text: 'root',
+        next: {
+          text: 'sub'
+        }
+      }
+
+      // eslint-disable-next-line
+      let nestedProxy: any
+
+      beforeEach(async () => {
+        nestedProxy = session.create(nested)
+
+        await session.save()
+        nestedProxy.next.text = 'updated'
+      })
+
+      it('marks the IPLD node as dirty', () => {
+        expect(Merkling.isIpldNode(nestedProxy)).toBe(true)
+        expect(Merkling.isDirty(nestedProxy)).toBe(true)
+      })
+
+      it('removes the cid against the IPLD node', () => {
+        expect(Merkling.cid(nestedProxy)).toBe(null)
+      })
+
+      it('persists to IPFS on save', async () => {
+        expect(mockIpfs.shared.saveCalls).toBe(1)
+        await session.save()
+        expect(mockIpfs.shared.saveCalls).toBe(2)
+      })
     })
   })
 
