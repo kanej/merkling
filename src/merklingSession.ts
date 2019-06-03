@@ -1,71 +1,27 @@
-import { IIpfsNode, Merkling, ICid, IIpldNode } from './merkling'
+import { IIpfsNode, Merkling } from './merkling'
 import {
   IMerklingProxyRecord,
   MerklingProxyType,
   MerklingLifecycleState,
   merklingProxyHandler
 } from './merklingProxyHandler'
-import { getStateSymbol, setCidSymbol } from './symbols'
-
-class IpfsWrapper {
-  _ipfs: IIpfsNode
-
-  constructor(ipfs: IIpfsNode) {
-    this._ipfs = ipfs
-  }
-
-  async put(obj: {}): Promise<ICid> {
-    return new Promise(
-      // eslint-disable-next-line
-      (resolve, reject): any => {
-        return this._ipfs.dag.put(
-          obj,
-          { format: 'dag-cbor', hashAlg: 'sha3-512' },
-          // eslint-disable-next-line
-          (err: Error, cid: ICid): any => {
-            if (err) {
-              return reject(err)
-            }
-
-            return resolve(cid)
-          }
-        )
-      }
-    )
-  }
-
-  async get(hash: string): Promise<IIpldNode> {
-    return new Promise(
-      // eslint-disable-next-line
-      (resolve, reject): any => {
-        return this._ipfs.dag.get(
-          hash,
-          // eslint-disable-next-line
-          (err: Error, ipldNode: IIpldNode): any => {
-            if (err) {
-              return reject(err)
-            }
-
-            return resolve(ipldNode)
-          }
-        )
-      }
-    )
-  }
-}
+import IpfsWrapper from './ipfsWrapper'
+import { getRecordSymbol } from './symbols'
 
 export default class MerklingSession {
   _ipfs: IpfsWrapper
   _stateObjToProxy: WeakMap<{}, {}>
   _stateObjToParentRecord: WeakMap<{}, IMerklingProxyRecord>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _roots: any[]
+  _roots: IMerklingProxyRecord[]
+  _ipldIdCounter: number
 
   constructor({ ipfs }: { ipfs: IIpfsNode }) {
     this._ipfs = new IpfsWrapper(ipfs)
     this._stateObjToProxy = new WeakMap()
     this._stateObjToParentRecord = new WeakMap()
     this._roots = []
+    this._ipldIdCounter = 0
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,6 +31,7 @@ export default class MerklingSession {
     }
 
     const record: IMerklingProxyRecord = {
+      internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.DIRTY,
       cid: null,
@@ -84,7 +41,7 @@ export default class MerklingSession {
 
     const proxy = new Proxy(record, merklingProxyHandler)
 
-    this._roots.push(proxy)
+    this._roots.push(record)
 
     // eslint-disable-next-line
     return (proxy as any) as T
@@ -94,6 +51,7 @@ export default class MerklingSession {
     const ipldNode = await this._ipfs.get(hash)
 
     const record: IMerklingProxyRecord = {
+      internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.CLEAN,
       cid: ipldNode.cid,
@@ -103,20 +61,58 @@ export default class MerklingSession {
 
     const proxy = new Proxy(record, merklingProxyHandler)
 
-    this._roots.push(proxy)
+    this._roots.push(record)
 
     return proxy
   }
 
   async save(): Promise<void> {
-    for (const root of this._roots) {
-      if (Merkling.isDirty(root)) {
-        const state = root[getStateSymbol]
-
-        const cid = await this._ipfs.put(state)
-
-        root[setCidSymbol] = cid
-      }
+    for (const root of this._roots.reverse()) {
+      await this._recursiveSaveIpldNode(root)
     }
+  }
+
+  // eslint-disable-next-line
+  private async _recursiveSaveIpldNode(
+    record: IMerklingProxyRecord
+  ): Promise<void> {
+    if (!record || record.type !== MerklingProxyType.IPLD) {
+      throw new Error('Cannot recursively save a non-ipld node')
+    }
+
+    if (record.lifecycleState !== MerklingLifecycleState.DIRTY) {
+      return
+    }
+
+    // eslint-disable-next-line
+    const childIpldNodes: any[] = this._traverseStateForIpldNodes(record.state)
+
+    for (const childIpldNode of childIpldNodes || []) {
+      const subrecord = childIpldNode[getRecordSymbol]
+      await this._recursiveSaveIpldNode(subrecord)
+    }
+
+    const cid = await this._ipfs.put(record.state)
+
+    record.cid = cid
+    record.lifecycleState = MerklingLifecycleState.CLEAN
+  }
+
+  // eslint-disable-next-line
+  private _traverseStateForIpldNodes(obj: any, acc: any[] = []): any[] {
+    for (let v of Object.values(obj)) {
+      if (!v || typeof v !== 'object') {
+        continue
+      }
+
+      if (Merkling.isIpldNode(v)) {
+        acc.push(v)
+        continue
+      }
+
+      this._traverseStateForIpldNodes(v, acc)
+    }
+
+    return acc
   }
 }

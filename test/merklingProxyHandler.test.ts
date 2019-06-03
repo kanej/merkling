@@ -27,6 +27,7 @@ describe('Merkling Proxy Handler', () => {
     }
 
     const record: IMerklingProxyRecord = {
+      internalId: 1,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.DIRTY,
       cid: null,

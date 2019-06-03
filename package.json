@@ -14,7 +14,7 @@
   "scripts": {
     "pretest": "rimraf .\\.test-ipfs",
     "test": "jest --runInBand --coverage",
-    "test:integration": "jest --detectOpenHandles --runInBand --config=jest.integration.json --runTestsByPath ./test/integration/updating.test.ts",
+    "test:integration": "jest --detectOpenHandles --runInBand --config=jest.integration.json --runTestsByPath ./test/integration/persisting.test.ts",
     "lint": "eslint --fix .\\{src,test}\\**\\*.ts",
     "build": "tsc",
     "dev": "webpack-dev-server --open",

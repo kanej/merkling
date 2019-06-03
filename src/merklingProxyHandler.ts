@@ -6,7 +6,8 @@ import {
   isDirtySymbol,
   getStateSymbol,
   getCidSymbol,
-  setCidSymbol
+  setCidSymbol,
+  getRecordSymbol
 } from './symbols'
 import { ICid } from './merkling'
 
@@ -21,6 +22,7 @@ export enum MerklingProxyType {
 }
 
 export interface IMerklingProxyRecord {
+  internalId: number
   type: MerklingProxyType
   lifecycleState: MerklingLifecycleState
   cid: ICid | null
@@ -47,6 +49,10 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyRecord> = {
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(target: IMerklingProxyRecord, key: ProxyKey): any {
+    if (key === getRecordSymbol) {
+      return target
+    }
+
     if (key === isProxySymbol) {
       return true
     }
@@ -78,6 +84,7 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyRecord> = {
     }
 
     const record: IMerklingProxyRecord = {
+      internalId: ++target.session._ipldIdCounter,
       type: MerklingProxyType.INTERNAL,
       lifecycleState: MerklingLifecycleState.DIRTY,
       cid: null,

@@ -69,4 +69,70 @@ describe('Persisting', () => {
       }
     })
   })
+
+  interface IFeed {
+    title: string
+    // eslint-disable-next-line
+    posts?: any
+  }
+
+  interface IPost {
+    text: string
+    // eslint-disable-next-line
+    next?: any
+  }
+
+  it('saves an nested merkling objects', async () => {
+    const session = merkling.createSession()
+
+    const feed: IFeed = session.create({
+      title: 'Thoughts'
+    })
+
+    const thought1: IPost = session.create({
+      text: 'More poetry please'
+    })
+
+    const thought2: IPost = session.create({
+      text: 'That is enough'
+    })
+
+    feed.posts = thought1
+    thought1.next = thought2
+
+    await session.save()
+
+    const feedCid = Merkling.cid(feed)
+    expect(feedCid).toBeTruthy()
+    // expect((feedCid as ICid).toBaseEncodedString()).toBe('zzzz')
+
+    expect(Merkling.isIpldNode(thought1)).toBe(true)
+    const though1Cid = Merkling.cid(thought1)
+    expect(though1Cid).toBeTruthy()
+
+    expect(Merkling.isIpldNode(thought2)).toBe(true)
+    const though2Cid = Merkling.cid(thought2)
+    expect(though2Cid).toBeTruthy()
+
+    const secondSession = merkling.createSession()
+
+    // eslint-disable-next-line
+    const savedProxy: any = await secondSession.get(
+      (feedCid as ICid).toBaseEncodedString()
+    )
+
+    expect(savedProxy).toStrictEqual({
+      title: 'Thoughts',
+      posts: {
+        text: 'More poetry please',
+        next: {
+          text: 'That is enough'
+        }
+      }
+    })
+
+    expect(Merkling.isIpldNode(savedProxy)).toBe(true)
+    expect(Merkling.isIpldNode(savedProxy.posts)).toBe(true)
+    expect(Merkling.isIpldNode(savedProxy.posts.next)).toBe(true)
+  })
 })
