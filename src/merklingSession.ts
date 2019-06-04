@@ -1,27 +1,29 @@
 import { IIpfsNode, Merkling } from './merkling'
 import {
-  IMerklingProxyRecord,
+  IMerklingInternalRecord,
   MerklingProxyType,
   MerklingLifecycleState,
-  merklingProxyHandler
+  merklingProxyHandler,
+  IMerklingProxyRef,
+  IMerklingProxyState
 } from './merklingProxyHandler'
 import IpfsWrapper from './ipfsWrapper'
 import { getRecordSymbol } from './symbols'
 
 export default class MerklingSession {
   _ipfs: IpfsWrapper
-  _stateObjToProxy: WeakMap<{}, {}>
-  _stateObjToParentRecord: WeakMap<{}, IMerklingProxyRecord>
+  _stateObjToParentRecord: WeakMap<{}, IMerklingInternalRecord>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _roots: IMerklingProxyRecord[]
   _ipldIdCounter: number
+  _ipldNodeEntries: Map<number, IMerklingInternalRecord>
+  _proxies: Map<string, {}>
 
   constructor({ ipfs }: { ipfs: IIpfsNode }) {
     this._ipfs = new IpfsWrapper(ipfs)
-    this._stateObjToProxy = new WeakMap()
     this._stateObjToParentRecord = new WeakMap()
-    this._roots = []
     this._ipldIdCounter = 0
+    this._ipldNodeEntries = new Map<number, IMerklingInternalRecord>()
+    this._proxies = new Map<string, IMerklingProxyState>()
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,18 +32,29 @@ export default class MerklingSession {
       return objState
     }
 
-    const record: IMerklingProxyRecord = {
+    const record: IMerklingInternalRecord = {
       internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.DIRTY,
       cid: null,
-      session: this,
       state: objState
     }
 
-    const proxy = new Proxy(record, merklingProxyHandler)
+    const proxyId: IMerklingProxyRef = {
+      internalId: record.internalId,
+      type: record.type,
+      path: []
+    }
 
-    this._roots.push(record)
+    const proxy = new Proxy(
+      {
+        ref: proxyId,
+        session: this
+      },
+      merklingProxyHandler
+    )
+
+    this._ipldNodeEntries.set(record.internalId, record)
 
     // eslint-disable-next-line
     return (proxy as any) as T
@@ -50,31 +63,42 @@ export default class MerklingSession {
   async get(hash: string): Promise<{}> {
     const ipldNode = await this._ipfs.get(hash)
 
-    const record: IMerklingProxyRecord = {
+    const record: IMerklingInternalRecord = {
       internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.CLEAN,
       cid: ipldNode.cid,
-      session: this,
       state: ipldNode.value
     }
 
-    const proxy = new Proxy(record, merklingProxyHandler)
+    const proxyId: IMerklingProxyRef = {
+      internalId: record.internalId,
+      type: record.type,
+      path: []
+    }
 
-    this._roots.push(record)
+    const proxy = new Proxy(
+      {
+        ref: proxyId,
+        session: this
+      },
+      merklingProxyHandler
+    )
+
+    this._ipldNodeEntries.set(record.internalId, record)
 
     return proxy
   }
 
   async save(): Promise<void> {
-    for (const root of this._roots.reverse()) {
-      await this._recursiveSaveIpldNode(root)
+    for (const ipldNode of this._ipldNodeEntries.values()) {
+      await this._recursiveSaveIpldNode(ipldNode)
     }
   }
 
   // eslint-disable-next-line
   private async _recursiveSaveIpldNode(
-    record: IMerklingProxyRecord
+    record: IMerklingInternalRecord
   ): Promise<void> {
     if (!record || record.type !== MerklingProxyType.IPLD) {
       throw new Error('Cannot recursively save a non-ipld node')

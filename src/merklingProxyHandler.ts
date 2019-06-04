@@ -7,9 +7,12 @@ import {
   getStateSymbol,
   getCidSymbol,
   setCidSymbol,
-  getRecordSymbol
+  getRecordSymbol,
+  getRefSymbol
 } from './symbols'
-import { ICid } from './merkling'
+import { ICid, Merkling } from './merkling'
+
+type ProxyKey = string | symbol | number
 
 export enum MerklingLifecycleState {
   DIRTY = 'DIRTY',
@@ -21,26 +24,88 @@ export enum MerklingProxyType {
   INTERNAL = 'INTERNAL'
 }
 
-export interface IMerklingProxyRecord {
+export interface IMerklingProxyRef {
+  internalId: number
+  type: MerklingProxyType
+  path: ProxyKey[]
+}
+
+export interface IMerklingProxyState {
+  ref: MerklingProxyRef
+  session: MerklingSession
+}
+
+export interface IMerklingInternalRecord {
   internalId: number
   type: MerklingProxyType
   lifecycleState: MerklingLifecycleState
   cid: ICid | null
-  session: MerklingSession
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: any
 }
 
-type ProxyKey = string | symbol | number
+export class MerklingProxyRef implements IMerklingProxyRef {
+  internalId: number
+  type: MerklingProxyType
+  path: (string | number | symbol)[]
 
-export const merklingProxyHandler: ProxyHandler<IMerklingProxyRecord> = {
-  has: function(target: IMerklingProxyRecord, key: ProxyKey): boolean {
-    return key in target.state
+  constructor(ref: IMerklingProxyRef) {
+    this.internalId = ref.internalId
+    this.type = ref.type
+    this.path = ref.path
+  }
+
+  toString(): string {
+    return `${this.internalId}/${this.path.join('/')}`
+  }
+}
+
+interface IRecordAndState {
+  record: IMerklingInternalRecord | undefined
+  state: {} | undefined
+}
+
+const lookupRecordAndState = (target: IMerklingProxyState): IRecordAndState => {
+  const ipldRecord = target.session._ipldNodeEntries.get(target.ref.internalId)
+
+  if (!ipldRecord) {
+    return {
+      record: undefined,
+      state: undefined
+    }
+  }
+
+  let state = ipldRecord.state
+  for (const key of target.ref.path) {
+    state = state[key]
+  }
+
+  return {
+    record: ipldRecord,
+    state: state
+  }
+}
+
+export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
+  has: function(target: IMerklingProxyState, key: ProxyKey): boolean {
+    const { state } = lookupRecordAndState(target)
+
+    if (!state) {
+      return false
+    }
+
+    return key in state
   },
-  ownKeys(target: IMerklingProxyRecord): ProxyKey[] {
-    return Reflect.ownKeys(target.state)
+  ownKeys(target: IMerklingProxyState): ProxyKey[] {
+    const { state } = lookupRecordAndState(target)
+
+    if (!state) {
+      return []
+    }
+
+    return Reflect.ownKeys(state)
   },
-  getOwnPropertyDescriptor(target: IMerklingProxyRecord, key: ProxyKey): {} {
+  getOwnPropertyDescriptor(target: IMerklingProxyState, key: ProxyKey): {} {
     return {
       value: (this as { get: Function }).get(target, key),
       enumerable: true,
@@ -48,89 +113,104 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyRecord> = {
     }
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get(target: IMerklingProxyRecord, key: ProxyKey): any {
-    if (key === getRecordSymbol) {
-      return target
-    }
-
+  get(target: IMerklingProxyState, key: ProxyKey): any {
     if (key === isProxySymbol) {
       return true
     }
 
     if (key === isIpldNodeSymbol) {
-      return target.type === MerklingProxyType.IPLD
+      return target.ref.type === MerklingProxyType.IPLD
+    }
+
+    if (key === getRefSymbol) {
+      return target.ref
+    }
+
+    const { record, state } = lookupRecordAndState(target)
+
+    if (!record) {
+      return undefined
     }
 
     if (key === isDirtySymbol) {
-      return target.lifecycleState === MerklingLifecycleState.DIRTY
+      return record.lifecycleState === MerklingLifecycleState.DIRTY
     }
 
     if (key === getStateSymbol) {
-      return target.state
+      return record.state
     }
 
     if (key === getCidSymbol) {
-      return target.cid
+      return record.cid
     }
 
-    const value = target.state[key]
+    if (key === getRecordSymbol) {
+      return target
+    }
+
+    // eslint-disable-next-line
+    const value = (state as any)[key]
 
     if (!value || typeof value !== 'object') {
       return value
     }
 
-    if (target.session._stateObjToProxy.has(value)) {
-      return target.session._stateObjToProxy.get(value)
-    }
-
-    const record: IMerklingProxyRecord = {
-      internalId: ++target.session._ipldIdCounter,
+    const proxyId: IMerklingProxyRef = new MerklingProxyRef({
+      internalId: target.ref.internalId,
       type: MerklingProxyType.INTERNAL,
-      lifecycleState: MerklingLifecycleState.DIRTY,
-      cid: null,
-      session: target.session,
-      state: value
+      path: [key]
+    })
+
+    if (target.session._proxies.has(proxyId.toString())) {
+      return target.session._proxies.get(proxyId.toString())
     }
 
-    const newProxy: IMerklingProxyRecord = new Proxy<IMerklingProxyRecord>(
-      record,
+    const internalProxy = new Proxy<IMerklingProxyState>(
+      {
+        ref: proxyId,
+        session: target.session
+      },
       merklingProxyHandler
     )
 
-    target.session._stateObjToProxy.set(value, newProxy)
-    target.session._stateObjToParentRecord.set(value, target)
+    target.session._proxies.set(proxyId.toString(), internalProxy)
 
-    return newProxy
+    return internalProxy
   },
   set(
-    target: IMerklingProxyRecord,
+    target: IMerklingProxyState,
     key: string | number | symbol,
     value: ICid
   ): boolean {
+    const { record, state } = lookupRecordAndState(target)
+
+    if (!record || !state) {
+      return false
+    }
+
     if (key === setCidSymbol) {
-      target.cid = value
-      target.lifecycleState = MerklingLifecycleState.CLEAN
-      return true
-    } else {
-      let parentState: {} | undefined = target.state
-      while (
-        parentState &&
-        target.session._stateObjToParentRecord.has(parentState)
-      ) {
-        let parentRecord = target.session._stateObjToParentRecord.get(
-          parentState
-        ) as IMerklingProxyRecord
-
-        parentRecord.lifecycleState = MerklingLifecycleState.DIRTY
-        parentRecord.cid = null
-
-        parentState = parentRecord.state
+      if (record.type !== MerklingProxyType.IPLD) {
+        throw new Error('Cannot set CID on internal proxy')
       }
 
-      target.lifecycleState = MerklingLifecycleState.DIRTY
-      target.cid = null
-      var result = Reflect.set(target.state, key, value)
-      return result
+      record.cid = value
+      record.lifecycleState = MerklingLifecycleState.CLEAN
+      return true
+    } else {
+      record.lifecycleState = MerklingLifecycleState.DIRTY
+      record.cid = null
+
+      if (Merkling.isProxy(value)) {
+        if (!Merkling.isIpldNode(value)) {
+          throw new Error('Setting sub-nodes not supported')
+        }
+
+        // eslint-disable-next-line
+        const ref = (value as any)[getRefSymbol]
+        return Reflect.set(state, key, ref)
+      } else {
+        return Reflect.set(state, key, value)
+      }
     }
   }
 }

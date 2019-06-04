@@ -1,3 +1,4 @@
+export const getRefSymbol = Symbol('merkling/getRef')
 export const isProxySymbol = Symbol('merkling/isProxy')
 export const isIpldNodeSymbol = Symbol('merkling/isIpldNode')
 export const isDirtySymbol = Symbol('merkling/isDirty')

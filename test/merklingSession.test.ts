@@ -1,7 +1,6 @@
 import MerklingSession from '../src/merklingSession'
 import { Merkling, ICid } from '../src/merkling'
 import setupMockIpfs, { MockIpfs } from './mockIpfs'
-import { isDirtySymbol } from '../src/symbols'
 
 const toCid = (text: string) => {
   const cid: ICid = {
@@ -331,19 +330,22 @@ describe('Session', () => {
       })
 
       it('persists both parent and child to ipfs', async () => {
-        const nested = session.create({
+        // eslint-disable-next-line
+        const nested: any = session.create({
           text: 'example',
-          sub: session.create({
-            text: 'sub'
-          })
+          sub: undefined
         })
+
+        const sub = session.create({
+          text: 'sub'
+        })
+
+        nested.sub = sub
 
         await session.save()
 
         expect(Merkling.isDirty(nested)).toBe(false)
-
-        // TODO: bring back this assertion
-        // expect(Merkling.isDirty(nested.sub)).toBe(false)
+        expect(Merkling.isDirty(nested.sub)).toBe(false)
 
         expect(mockIpfs.shared.saveCalls).toBe(2)
       })
