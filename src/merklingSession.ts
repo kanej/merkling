@@ -12,15 +12,12 @@ import { getRecordSymbol } from './symbols'
 
 export default class MerklingSession {
   _ipfs: IpfsWrapper
-  _stateObjToParentRecord: WeakMap<{}, IMerklingInternalRecord>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _ipldIdCounter: number
   _ipldNodeEntries: Map<number, IMerklingInternalRecord>
   _proxies: Map<string, {}>
 
   constructor({ ipfs }: { ipfs: IIpfsNode }) {
     this._ipfs = new IpfsWrapper(ipfs)
-    this._stateObjToParentRecord = new WeakMap()
     this._ipldIdCounter = 0
     this._ipldNodeEntries = new Map<number, IMerklingInternalRecord>()
     this._proxies = new Map<string, IMerklingProxyState>()
