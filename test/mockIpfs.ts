@@ -4,7 +4,8 @@ interface ISharedState {
   saveCalls: number
   errorOnPut: boolean
   errorOnGet: boolean
-  objToCidMapping: WeakMap<{}, ICid>
+  // eslint-disable-next-line
+  objToCidMapper: (obj: any) => ICid
   cidToObjMapping: Map<string, {}>
 }
 
@@ -22,8 +23,9 @@ export class MockIpfs implements IIpfsNode {
     this.dag = dag
   }
 
-  mapObjToCid(obj: {}, cid: ICid) {
-    this.shared.objToCidMapping.set(obj, cid)
+  // eslint-disable-next-line
+  setObjToCidMapper(mapper: (obj: any) => ICid) {
+    this.shared.objToCidMapper = mapper
   }
 
   mapCidToObj(cid: ICid, obj: {}) {
@@ -40,7 +42,15 @@ export default function setupMockIpfs() {
     saveCalls: 0,
     errorOnPut: false,
     errorOnGet: false,
-    objToCidMapping: new WeakMap<{}, ICid>(),
+    // eslint-disable-next-line
+    objToCidMapper: (obj: any): ICid => {
+      return {
+        codec: 'example',
+        version: 1,
+        multihash: Buffer.from('UNKNOWN'),
+        toBaseEncodedString: () => 'UNKNOWN'
+      }
+    },
     cidToObjMapping: new Map<string, {}>()
   }
 
@@ -52,11 +62,7 @@ export default function setupMockIpfs() {
         return callback(new Error('Boom!'))
       }
 
-      const cid = shared.objToCidMapping.get(state) || {
-        codec: 'unknown',
-        version: 1,
-        multihash: Buffer.from('QUNREGISTERED')
-      }
+      const cid = shared.objToCidMapper(state)
 
       callback(null, cid)
     },

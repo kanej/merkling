@@ -24,7 +24,9 @@ export default class InternalGraph {
   topologicalSort(): number[] {
     const allVertexes = new Set<number>(
       Array.from(this._matrix.keys()).concat(
-        Array.from(this._matrix.values()).flatMap(s => Array.from(s))
+        Array.from(this._matrix.values()).flatMap(
+          (s: Set<number>): number[] => Array.from(s)
+        )
       )
     )
 

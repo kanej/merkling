@@ -9,18 +9,38 @@ import {
 } from './merklingProxyHandler'
 import IpfsWrapper from './ipfsWrapper'
 import { getRecordSymbol } from './symbols'
+import Serialiser from './serialiser'
 
 export default class MerklingSession {
   _ipfs: IpfsWrapper
   _ipldIdCounter: number
   _ipldNodeEntries: Map<number, IMerklingInternalRecord>
   _proxies: Map<string, {}>
+  _serialiser: Serialiser
 
   constructor({ ipfs }: { ipfs: IIpfsNode }) {
     this._ipfs = new IpfsWrapper(ipfs)
     this._ipldIdCounter = 0
     this._ipldNodeEntries = new Map<number, IMerklingInternalRecord>()
     this._proxies = new Map<string, IMerklingProxyState>()
+
+    this._serialiser = new Serialiser(
+      (id: number): string => {
+        const record = this._ipldNodeEntries.get(id)
+
+        if (!record) {
+          throw new Error('Ref to unknown IPLD node - ' + id)
+        }
+
+        const cid = record.cid
+
+        if (!cid) {
+          throw new Error('Attempted to serialize unsaved IPLD node')
+        }
+
+        return cid.toBaseEncodedString()
+      }
+    )
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -113,7 +133,9 @@ export default class MerklingSession {
       await this._recursiveSaveIpldNode(subrecord)
     }
 
-    const cid = await this._ipfs.put(record.state)
+    const serializedState = this._serialiser.serialise(record.state)
+
+    const cid = await this._ipfs.put(serializedState)
 
     record.cid = cid
     record.lifecycleState = MerklingLifecycleState.CLEAN

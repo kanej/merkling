@@ -146,6 +146,8 @@ describe('Session', () => {
 
     beforeEach(() => {
       mockIpfs = setupMockIpfs()
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      mockIpfs.setObjToCidMapper(_obj => toCid('Q111111111111111'))
       session = new MerklingSession({ ipfs: mockIpfs })
     })
 
@@ -160,7 +162,6 @@ describe('Session', () => {
         })
 
         beforeEach(async () => {
-          mockIpfs.mapObjToCid(simplePojo, toCid('Q111111111111111'))
           proxy = session.create(simplePojo)
           await session.save()
         })
@@ -191,7 +192,6 @@ describe('Session', () => {
           })
 
           beforeEach(async () => {
-            mockIpfs.mapObjToCid(simplePojo, toCid('Q111111111111111'))
             proxy = session.create(simplePojo)
             await session.save()
           })
