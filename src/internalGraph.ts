@@ -21,6 +21,14 @@ export default class InternalGraph {
     adjecencyMap.add(to)
   }
 
+  add(vertex: number): void {
+    if (this._matrix.has(vertex)) {
+      return
+    }
+
+    this._matrix.set(vertex, new Set<number>())
+  }
+
   topologicalSort(): number[] {
     const allVertexes = new Set<number>(
       Array.from(this._matrix.keys()).concat(

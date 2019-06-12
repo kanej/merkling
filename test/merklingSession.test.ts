@@ -85,7 +85,7 @@ describe('Session', () => {
     })
 
     describe('from a single nested pojo', () => {
-      const singlyNestedPojo = Object.freeze({
+      const singlyNestedPojo = {
         text: 'single-nesting',
         nested: {
           text: 'example',
@@ -94,7 +94,7 @@ describe('Session', () => {
           undefinedProp: undefined,
           nullProp: null
         }
-      })
+      }
 
       beforeEach(() => {
         proxy = session.create(singlyNestedPojo)

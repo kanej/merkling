@@ -55,8 +55,16 @@ export class MerklingProxyRef implements IMerklingProxyRef {
     this.path = ref.path
   }
 
+  isRef(): boolean {
+    return true
+  }
+
   toString(): string {
-    return `${this.internalId}/${this.path.join('/')}`
+    if (this.path.length > 0) {
+      return `${this.internalId}/${this.path.join('/')}`
+    } else {
+      return this.internalId.toString()
+    }
   }
 }
 
@@ -105,13 +113,19 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
 
     return Reflect.ownKeys(state)
   },
-  getOwnPropertyDescriptor(target: IMerklingProxyState, key: ProxyKey): {} {
-    return {
-      value: (this as { get: Function }).get(target, key),
-      enumerable: true,
-      configurable: true
+  getOwnPropertyDescriptor(
+    target: IMerklingProxyState,
+    key: ProxyKey
+  ): PropertyDescriptor | undefined {
+    const { state } = lookupRecordAndState(target)
+
+    if (!state) {
+      return undefined
     }
+
+    return Object.getOwnPropertyDescriptor(state, key)
   },
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(target: IMerklingProxyState, key: ProxyKey): any {
     if (key === isProxySymbol) {
@@ -155,11 +169,16 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
       return value
     }
 
-    const proxyId: IMerklingProxyRef = new MerklingProxyRef({
-      internalId: target.ref.internalId,
-      type: MerklingProxyType.INTERNAL,
-      path: [key]
-    })
+    let proxyId: MerklingProxyRef
+    if ('isRef' in value && value.isRef()) {
+      proxyId = value as MerklingProxyRef
+    } else {
+      proxyId = new MerklingProxyRef({
+        internalId: target.ref.internalId,
+        type: MerklingProxyType.INTERNAL,
+        path: [key]
+      })
+    }
 
     if (target.session._proxies.has(proxyId.toString())) {
       return target.session._proxies.get(proxyId.toString())
@@ -206,7 +225,11 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
         }
 
         // eslint-disable-next-line
-        const ref = (value as any)[getRefSymbol]
+        const ref = (value as any)[getRefSymbol] as MerklingProxyRef
+        target.session._internalGraph.link(
+          target.ref.internalId,
+          ref.internalId
+        )
         return Reflect.set(state, key, ref)
       } else {
         return Reflect.set(state, key, value)

@@ -19,7 +19,7 @@ export default class Serialiser {
 
     for (var i in obj) {
       if (obj[i] != null && typeof obj[i] === 'object') {
-        if (obj[i].constructor.name === MerklingProxyRef.name) {
+        if ('isRef' in obj[i] && obj[i].isRef) {
           const ref = obj[i] as MerklingProxyRef
           clone[i] = { '/': this._internalIdToCidHashEncoder(ref.internalId) }
         } else {

@@ -1,15 +1,15 @@
-import { IIpfsNode, Merkling } from './merkling'
+import { IIpfsNode } from './merkling'
 import {
   IMerklingInternalRecord,
   MerklingProxyType,
   MerklingLifecycleState,
   merklingProxyHandler,
-  IMerklingProxyRef,
-  IMerklingProxyState
+  IMerklingProxyState,
+  MerklingProxyRef
 } from './merklingProxyHandler'
 import IpfsWrapper from './ipfsWrapper'
-import { getRecordSymbol } from './symbols'
 import Serialiser from './serialiser'
+import InternalGraph from './internalGraph'
 
 export default class MerklingSession {
   _ipfs: IpfsWrapper
@@ -17,6 +17,7 @@ export default class MerklingSession {
   _ipldNodeEntries: Map<number, IMerklingInternalRecord>
   _proxies: Map<string, {}>
   _serialiser: Serialiser
+  _internalGraph: InternalGraph
 
   constructor({ ipfs }: { ipfs: IIpfsNode }) {
     this._ipfs = new IpfsWrapper(ipfs)
@@ -24,6 +25,7 @@ export default class MerklingSession {
     this._ipldNodeEntries = new Map<number, IMerklingInternalRecord>()
     this._proxies = new Map<string, IMerklingProxyState>()
 
+    this._internalGraph = new InternalGraph()
     this._serialiser = new Serialiser(
       (id: number): string => {
         const record = this._ipldNodeEntries.get(id)
@@ -57,11 +59,11 @@ export default class MerklingSession {
       state: objState
     }
 
-    const proxyId: IMerklingProxyRef = {
+    const proxyId: MerklingProxyRef = new MerklingProxyRef({
       internalId: record.internalId,
       type: record.type,
       path: []
-    }
+    })
 
     const proxy = new Proxy(
       {
@@ -71,7 +73,7 @@ export default class MerklingSession {
       merklingProxyHandler
     )
 
-    this._ipldNodeEntries.set(record.internalId, record)
+    this._addIpldNodeEntry(record)
 
     // eslint-disable-next-line
     return (proxy as any) as T
@@ -88,11 +90,11 @@ export default class MerklingSession {
       state: ipldNode.value
     }
 
-    const proxyId: IMerklingProxyRef = {
+    const proxyId: MerklingProxyRef = new MerklingProxyRef({
       internalId: record.internalId,
       type: record.type,
       path: []
-    }
+    })
 
     const proxy = new Proxy(
       {
@@ -102,15 +104,28 @@ export default class MerklingSession {
       merklingProxyHandler
     )
 
-    this._ipldNodeEntries.set(record.internalId, record)
+    this._addIpldNodeEntry(record)
 
     return proxy
   }
 
   async save(): Promise<void> {
-    for (const ipldNode of this._ipldNodeEntries.values()) {
-      await this._recursiveSaveIpldNode(ipldNode)
+    for (const ipldNodeId of this._internalGraph.topologicalSort()) {
+      const entry = this._ipldNodeEntries.get(ipldNodeId)
+
+      if (!entry) {
+        throw new Error(
+          `Failure of topological sort - no node with id ${ipldNodeId}`
+        )
+      }
+
+      await this._recursiveSaveIpldNode(entry)
     }
+  }
+
+  private _addIpldNodeEntry(record: IMerklingInternalRecord): void {
+    this._ipldNodeEntries.set(record.internalId, record)
+    this._internalGraph.add(record.internalId)
   }
 
   // eslint-disable-next-line
@@ -125,37 +140,10 @@ export default class MerklingSession {
       return
     }
 
-    // eslint-disable-next-line
-    const childIpldNodes: any[] = this._traverseStateForIpldNodes(record.state)
-
-    for (const childIpldNode of childIpldNodes || []) {
-      const subrecord = childIpldNode[getRecordSymbol]
-      await this._recursiveSaveIpldNode(subrecord)
-    }
-
     const serializedState = this._serialiser.serialise(record.state)
-
     const cid = await this._ipfs.put(serializedState)
 
     record.cid = cid
     record.lifecycleState = MerklingLifecycleState.CLEAN
-  }
-
-  // eslint-disable-next-line
-  private _traverseStateForIpldNodes(obj: any, acc: any[] = []): any[] {
-    for (let v of Object.values(obj)) {
-      if (!v || typeof v !== 'object') {
-        continue
-      }
-
-      if (Merkling.isIpldNode(v)) {
-        acc.push(v)
-        continue
-      }
-
-      this._traverseStateForIpldNodes(v, acc)
-    }
-
-    return acc
   }
 }
