@@ -8,7 +8,8 @@ import {
   getCidSymbol,
   setCidSymbol,
   getRecordSymbol,
-  getRefSymbol
+  getRefSymbol,
+  resolveSymbol
 } from './symbols'
 import { ICid, Merkling } from './merkling'
 
@@ -16,7 +17,8 @@ type ProxyKey = string | symbol | number
 
 export enum MerklingLifecycleState {
   DIRTY = 'DIRTY',
-  CLEAN = 'CLEAN'
+  CLEAN = 'CLEAN',
+  UNLOADED = 'UNLOADED'
 }
 
 export enum MerklingProxyType {
@@ -138,6 +140,10 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
 
     if (key === getRefSymbol) {
       return target.ref
+    }
+
+    if (key === resolveSymbol) {
+      return target.session._resolveRef(target.ref)
     }
 
     const { record, state } = lookupRecordAndState(target)

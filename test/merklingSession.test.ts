@@ -1,17 +1,7 @@
 import MerklingSession from '../src/merklingSession'
 import { Merkling, ICid } from '../src/merkling'
 import setupMockIpfs, { MockIpfs } from './mockIpfs'
-
-const toCid = (text: string) => {
-  const cid: ICid = {
-    codec: 'example',
-    version: 1,
-    multihash: Buffer.from(text),
-    toBaseEncodedString: () => text
-  }
-
-  return cid
-}
+import { toCid } from './helpers'
 
 describe('Session', () => {
   let session: MerklingSession

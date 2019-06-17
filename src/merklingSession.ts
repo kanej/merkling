@@ -1,4 +1,5 @@
-import { IIpfsNode } from './merkling'
+import CID from 'cids'
+import { IIpfsNode, ICid } from './merkling'
 import {
   IMerklingInternalRecord,
   MerklingProxyType,
@@ -27,7 +28,7 @@ export default class MerklingSession {
 
     this._internalGraph = new InternalGraph()
     this._serialiser = new Serialiser(
-      (id: number): string => {
+      (id: number): ICid => {
         const record = this._ipldNodeEntries.get(id)
 
         if (!record) {
@@ -40,7 +41,7 @@ export default class MerklingSession {
           throw new Error('Attempted to serialize unsaved IPLD node')
         }
 
-        return cid.toBaseEncodedString()
+        return cid
       }
     )
   }
@@ -109,6 +110,34 @@ export default class MerklingSession {
     return proxy
   }
 
+  load(hash: string): IMerklingProxyState {
+    const record: IMerklingInternalRecord = {
+      internalId: ++this._ipldIdCounter,
+      type: MerklingProxyType.IPLD,
+      lifecycleState: MerklingLifecycleState.UNLOADED,
+      cid: new CID(hash),
+      state: undefined
+    }
+
+    const proxyId: MerklingProxyRef = new MerklingProxyRef({
+      internalId: record.internalId,
+      type: record.type,
+      path: []
+    })
+
+    const proxy = new Proxy(
+      {
+        ref: proxyId,
+        session: this
+      },
+      merklingProxyHandler
+    )
+
+    this._addIpldNodeEntry(record)
+
+    return proxy
+  }
+
   async save(): Promise<void> {
     for (const ipldNodeId of this._internalGraph.topologicalSort()) {
       const entry = this._ipldNodeEntries.get(ipldNodeId)
@@ -121,6 +150,21 @@ export default class MerklingSession {
 
       await this._recursiveSaveIpldNode(entry)
     }
+  }
+
+  async _resolveRef(ref: MerklingProxyRef): Promise<void> {
+    const record = this._ipldNodeEntries.get(ref.internalId)
+
+    if (!record) {
+      return
+    }
+
+    const ipldNode = await this._ipfs.get(
+      (record.cid as ICid).toBaseEncodedString()
+    )
+
+    record.state = ipldNode.value
+    record.lifecycleState = MerklingLifecycleState.CLEAN
   }
 
   private _addIpldNodeEntry(record: IMerklingInternalRecord): void {

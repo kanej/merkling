@@ -28,39 +28,52 @@ npm install --save merkling
 Merkling requires pulling in ipfs.
 
 ```javascript
-'use strict'
+const Merkling = require('merkling').Merkling
+const IPFS = require('ipfs')
 
-const { withIpfs } = require('./src/ipfs')
-const Merkling = require('./src/merkling')
+const node = new IPFS()
 
-withIpfs(async ipfs => {
-  const merkle = new Merkling({ipfs: ipfs})
+node.on('ready', async () => {
+    const client = new Merkling({ ipfs: node })
+    const session = client.createSession()
 
-  const head = await merkle.create({
-    title: 'Thoughts on Poetry',
-    author: 'P. Kavanagh',
-    feed: null
+    const feed = session.create({ title: 'On Poetry' })
+
+    const feed = session.create({
+      title: 'Poetry',
+      author: 'P. Kavanagh',
+      posts: null
+    })
+
+    const post1 = session.create({
+      text: 'Beauty was that, Far vanished flame, Call it a star, wanting better name',
+      next: null
+    })
+
+    const post2 = session.create({
+      text: 'And gaze vaguely until, Nothing is left, Save a grey ghost-hill'
+    })
+
+    const post3 = session.create({
+      text: 'Here wait I, On the world\'s rim, Stretching out hands, To Seraphim'
+    })
+
+    await session.save()
+
+    const hash = Merkling.cid(feed).toBaseEncodedString()
+
+    node.dag.get(`${hash}/head/next`, (err, saved) => {
+      if (err) {
+        throw err
+      }
+
+      console.log(saved.value)
+
+      node.stop(() => {
+        process.exit()
+      })
+    })
   })
-
-  const post1 = await merkle.create({
-    text: 'I love farms but I prefer guinness',
-    next: null
-  })
-
-  const post2 = await merkle.create({
-    text: 'Why wasn\'t I born French'
-  })
-
-  head.feed = post1
-  post1.next = post2
-
-  return merkle.save(head).then(ipldNode => {
-    console.log(ipldNode)
-    console.log(ipldNode._cid.toBaseEncodedString())
-  })
-
-}).done(() => {
-  process.exit()
 })
 ```
 

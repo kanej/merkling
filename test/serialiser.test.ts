@@ -3,15 +3,19 @@ import {
   MerklingProxyRef,
   MerklingProxyType
 } from '../src/merklingProxyHandler'
+import { ICid } from '../src/merkling'
+import { toCid } from './helpers'
 
 describe('serialiser', () => {
-  let exampleMappings: { [key: number]: string } = {
-    1: 'XXXYYY',
-    2: 'YYYZZZ'
+  const cid1 = toCid('XXXYYY')
+  const cid2 = toCid('YYYZZZ')
+  let exampleMappings: { [key: number]: ICid } = {
+    1: cid1,
+    2: cid2
   }
 
   let serialiser = new Serialiser(
-    (id: number): string => {
+    (id: number): ICid => {
       return exampleMappings[id]
     }
   )
@@ -84,7 +88,7 @@ describe('serialiser', () => {
       expect(serialiser.serialise(pojoWithRef)).toStrictEqual({
         a: 1,
         b: 'text',
-        c: { '/': 'XXXYYY' }
+        c: cid1
       })
     })
   })
@@ -126,10 +130,10 @@ describe('serialiser', () => {
         text: 'example',
         nested: {
           left: {
-            c: { '/': 'XXXYYY' }
+            c: cid1
           },
           right: {
-            d: { '/': 'YYYZZZ' }
+            d: cid2
           }
         }
       })

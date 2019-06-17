@@ -3,7 +3,9 @@ import {
   isProxySymbol,
   isIpldNodeSymbol,
   isDirtySymbol,
-  getCidSymbol
+  getCidSymbol,
+  resolveSymbol,
+  getStateSymbol
 } from './symbols'
 
 export interface IIpfsNode {
@@ -74,6 +76,24 @@ export class Merkling {
     }
 
     return proxy[getCidSymbol]
+  }
+
+  static async resolve(proxy: Proxy): Promise<Proxy> {
+    if (!this.isProxy(proxy)) {
+      return proxy
+    }
+
+    await proxy[resolveSymbol]
+
+    return proxy
+  }
+
+  static inspect(proxy: Proxy): {} {
+    if (!this.isProxy(proxy)) {
+      return proxy
+    }
+
+    return proxy[getStateSymbol]
   }
 
   createSession(): MerklingSession {
