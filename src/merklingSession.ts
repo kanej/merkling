@@ -80,15 +80,16 @@ export default class MerklingSession {
     return (proxy as any) as T
   }
 
-  async get(hash: string): Promise<{}> {
-    const ipldNode = await this._ipfs.get(hash)
+  async get(hash: string | ICid): Promise<{}> {
+    const cid = this._toCid(hash)
+    const state = await this._readStateFromIpfs(cid)
 
     const record: IMerklingInternalRecord = {
       internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.CLEAN,
-      cid: ipldNode.cid,
-      state: ipldNode.value
+      cid: cid,
+      state: state
     }
 
     const proxyId: MerklingProxyRef = new MerklingProxyRef({
@@ -97,6 +98,8 @@ export default class MerklingSession {
       path: []
     })
 
+    this._addIpldNodeEntry(record)
+
     const proxy = new Proxy(
       {
         ref: proxyId,
@@ -104,26 +107,12 @@ export default class MerklingSession {
       },
       merklingProxyHandler
     )
-
-    this._addIpldNodeEntry(record)
 
     return proxy
   }
 
-  load(hash: string): IMerklingProxyState {
-    const record: IMerklingInternalRecord = {
-      internalId: ++this._ipldIdCounter,
-      type: MerklingProxyType.IPLD,
-      lifecycleState: MerklingLifecycleState.UNLOADED,
-      cid: new CID(hash),
-      state: undefined
-    }
-
-    const proxyId: MerklingProxyRef = new MerklingProxyRef({
-      internalId: record.internalId,
-      type: record.type,
-      path: []
-    })
+  load(hash: string | ICid): IMerklingProxyState {
+    const proxyId = this._loadCidIntoSession(hash)
 
     const proxy = new Proxy(
       {
@@ -132,8 +121,6 @@ export default class MerklingSession {
       },
       merklingProxyHandler
     )
-
-    this._addIpldNodeEntry(record)
 
     return proxy
   }
@@ -152,6 +139,26 @@ export default class MerklingSession {
     }
   }
 
+  private _loadCidIntoSession(hash: string | ICid): MerklingProxyRef {
+    const record: IMerklingInternalRecord = {
+      internalId: ++this._ipldIdCounter,
+      type: MerklingProxyType.IPLD,
+      lifecycleState: MerklingLifecycleState.UNLOADED,
+      cid: this._toCid(hash),
+      state: undefined
+    }
+
+    const proxyId: MerklingProxyRef = new MerklingProxyRef({
+      internalId: record.internalId,
+      type: record.type,
+      path: []
+    })
+
+    this._addIpldNodeEntry(record)
+
+    return proxyId
+  }
+
   async _resolveRef(ref: MerklingProxyRef): Promise<void> {
     const record = this._ipldNodeEntries.get(ref.internalId)
 
@@ -159,11 +166,13 @@ export default class MerklingSession {
       return
     }
 
-    const ipldNode = await this._ipfs.get(
-      (record.cid as ICid).toBaseEncodedString()
-    )
+    if (!record.cid) {
+      throw new Error('Attempt to resolve ref without CID')
+    }
 
-    record.state = ipldNode.value
+    const state = await this._readStateFromIpfs(record.cid)
+
+    record.state = state
     record.lifecycleState = MerklingLifecycleState.CLEAN
   }
 
@@ -184,10 +193,36 @@ export default class MerklingSession {
       return
     }
 
-    const serializedState = this._serialiser.serialise(record.state)
-    const cid = await this._ipfs.put(serializedState)
+    const cid = await this._saveRecordToIpfs(record)
 
     record.cid = cid
     record.lifecycleState = MerklingLifecycleState.CLEAN
+  }
+
+  private async _saveRecordToIpfs(
+    record: IMerklingInternalRecord
+  ): Promise<ICid> {
+    const serializedState = this._serialiser.serialise(record.state)
+    return this._ipfs.put(serializedState)
+  }
+
+  // eslint-disable-next-line
+  private async _readStateFromIpfs(cid: ICid): Promise<any> {
+    const ipldNode = await this._ipfs.get(cid.toBaseEncodedString())
+
+    const substitutedState = this._serialiser.deserialise(
+      ipldNode.value,
+      (cid: ICid | string): MerklingProxyRef => this._loadCidIntoSession(cid)
+    )
+
+    return substitutedState
+  }
+
+  private _toCid(hash: string | ICid): ICid {
+    if (typeof hash === 'string') {
+      return new CID(hash)
+    } else {
+      return hash as ICid
+    }
   }
 }

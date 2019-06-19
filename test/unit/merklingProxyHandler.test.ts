@@ -5,8 +5,8 @@ import {
   IMerklingProxyState,
   MerklingProxyRef,
   IMerklingInternalRecord
-} from '../src/merklingProxyHandler'
-import { Merkling } from '../src/merkling'
+} from '../../src/merklingProxyHandler'
+import { Merkling } from '../../src/merkling'
 
 describe('Merkling Proxy Handler', () => {
   describe('IPLD Node', () => {

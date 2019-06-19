@@ -1,14 +1,19 @@
-import Serialiser from '../src/serialiser'
+import Serialiser from '../../src/serialiser'
 import {
   MerklingProxyRef,
   MerklingProxyType
-} from '../src/merklingProxyHandler'
-import { ICid } from '../src/merkling'
+} from '../../src/merklingProxyHandler'
+import { ICid } from '../../src/merkling'
 import { toCid } from './helpers'
 
+const exampleHash1 =
+  'zBwWX6kDxnbb7xaRuCVxS5qrQpHMrmY8JydAnwk5KYDG5mrkybgSDZaRDoSoqTZjP86NkqUKu1WvNd7RKvLXM5ocrpZkh'
+const exampleHash2 =
+  'zBwWX95ufqpkeKLN66Sz8sQcxsZQTXGgZVKBpgfg7UUUKRpZXNH7q7yZkjb7FDY8pSke1McW3HUXzpjjcZPwNKaoHKtcK'
+
 describe('serialiser', () => {
-  const cid1 = toCid('XXXYYY')
-  const cid2 = toCid('YYYZZZ')
+  const cid1 = toCid(exampleHash1)
+  const cid2 = toCid(exampleHash2)
   let exampleMappings: { [key: number]: ICid } = {
     1: cid1,
     2: cid2

@@ -1,5 +1,5 @@
-import { Merkling } from '../src/merkling'
-import MerklingSession from '../src/merklingSession'
+import { Merkling } from '../../src/merkling'
+import MerklingSession from '../../src/merklingSession'
 import setupMockIpfs from './mockIpfs'
 
 describe('Merkling', () => {

@@ -12,9 +12,10 @@
   },
   "main": "src/index.js",
   "scripts": {
-    "pretest": "rimraf .\\.test-ipfs",
-    "test": "jest --runInBand --coverage",
-    "test:integration": "jest --detectOpenHandles --runInBand --config=jest.integration.json --runTestsByPath ./test/integration/persisting.test.ts",
+    "test": "npm run test:unit",
+    "test:unit": "jest --runInBand --coverage --config=jest.unit.json",
+    "pretest:integration": "rimraf .\\.test-ipfs",
+    "test:integration": "jest --detectOpenHandles --runInBand --config=jest.integration.json",
     "lint": "eslint --fix .\\{src,test}\\**\\*.ts",
     "build": "tsc",
     "dev": "webpack-dev-server --open",
@@ -33,6 +34,9 @@
   ],
   "author": "John Kane <john@kanej.me>",
   "license": "MIT",
+  "dependencies": {
+    "cids": "^0.7.1"
+  },
   "peerDependencies": {
     "ipfs": "^0.35.0"
   },
@@ -72,20 +76,6 @@
       "jest"
     ]
   },
-  "jest": {
-    "modulePathIgnorePatterns": [
-      "test/integration"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
-      "!src/index.js",
-      "!<rootDir>/node_modules/",
-      "!<rootDir>/test/"
-    ],
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    }
-  },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
@@ -93,9 +83,5 @@
   },
   "release": {
     "branch": "master"
-  },
-  "dependencies": {
-    "cids": "^0.7.1",
-    "esm": "^3.2.22"
   }
 }

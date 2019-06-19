@@ -1,7 +1,12 @@
-import MerklingSession from '../src/merklingSession'
-import { Merkling, ICid } from '../src/merkling'
+import MerklingSession from '../../src/merklingSession'
+import { Merkling, ICid } from '../../src/merkling'
 import setupMockIpfs, { MockIpfs } from './mockIpfs'
 import { toCid } from './helpers'
+
+const exampleHash1 =
+  'zBwWX6kDxnbb7xaRuCVxS5qrQpHMrmY8JydAnwk5KYDG5mrkybgSDZaRDoSoqTZjP86NkqUKu1WvNd7RKvLXM5ocrpZkh'
+const exampleHash2 =
+  'zBwWX95ufqpkeKLN66Sz8sQcxsZQTXGgZVKBpgfg7UUUKRpZXNH7q7yZkjb7FDY8pSke1McW3HUXzpjjcZPwNKaoHKtcK'
 
 describe('Session', () => {
   let session: MerklingSession
@@ -137,7 +142,7 @@ describe('Session', () => {
     beforeEach(() => {
       mockIpfs = setupMockIpfs()
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      mockIpfs.setObjToCidMapper(_obj => toCid('Q111111111111111'))
+      mockIpfs.setObjToCidMapper(_obj => toCid(exampleHash1))
       session = new MerklingSession({ ipfs: mockIpfs })
     })
 
@@ -163,7 +168,7 @@ describe('Session', () => {
         it('should set the cid against the proxy', () => {
           const cid = Merkling.cid(proxy)
           expect(cid).toBeTruthy()
-          expect((cid as ICid).toBaseEncodedString()).toBe('Q111111111111111')
+          expect((cid as ICid).toBaseEncodedString()).toBe(exampleHash1)
         })
 
         it('should save the object to IPFS', () => {
@@ -349,9 +354,10 @@ describe('Session', () => {
 
     beforeEach(async () => {
       mockIpfs = setupMockIpfs()
-      mockIpfs.mapCidToObj(toCid('zxxxx'), { text: 'example' })
+      const cid = toCid(exampleHash2)
+      mockIpfs.mapCidToObj(cid, { text: 'example' })
       session = new MerklingSession({ ipfs: mockIpfs })
-      proxy = await session.get('zxxxx')
+      proxy = await session.get(cid)
     })
 
     it('returns a Merkling proxy', () => {
@@ -369,7 +375,7 @@ describe('Session', () => {
     describe('error', () => {
       it('should throw', async () => {
         mockIpfs.shared.errorOnGet = true
-        const getPromise = session.get('zxxxx')
+        const getPromise = session.get(exampleHash2)
         await expect(getPromise).rejects.toThrow()
       })
     })

@@ -27,7 +27,7 @@ export default class IpfsWrapper {
     )
   }
 
-  async get(hash: string): Promise<IIpldNode> {
+  async get(hash: string | ICid): Promise<IIpldNode> {
     return new Promise(
       // eslint-disable-next-line
       (resolve, reject): any => {

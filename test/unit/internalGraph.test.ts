@@ -1,4 +1,4 @@
-import InternalGraph from '../src/internalGraph'
+import InternalGraph from '../../src/internalGraph'
 
 describe('internal graph', () => {
   describe('breadth first search', () => {

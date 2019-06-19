@@ -1,4 +1,5 @@
 {
+  "testPathIgnorePatterns": ["/node_modules/", "test/unit"],
   "transform": {
     "^.+\\.tsx?$": "ts-jest"
   }

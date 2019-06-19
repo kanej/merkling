@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import CID from 'cids'
 import { MerklingProxyRef } from './merklingProxyHandler'
 import { ICid } from './merkling'
 
@@ -8,14 +10,32 @@ export default class Serialiser {
     this._internalIdToCidEncoder = internalIdToCidEncoder
   }
 
-  // eslint-disable-next-line
   serialise(obj: any): any {
     return this._cloneAndSubstitute(obj, this._merkleRefToIpldRef.bind(this))
   }
 
-  // deserialise(obj: any): any {
-  //   return this._cloneAndSubstitute(obj)
-  // }
+  deserialise(
+    obj: any,
+    internalIpldNodeMinter: (cid: ICid) => MerklingProxyRef
+  ): any {
+    return this._cloneAndSubstitute(
+      obj,
+      this._merkleRefToIpldRefBuilder(internalIpldNodeMinter)
+    )
+  }
+
+  private _merkleRefToIpldRefBuilder(
+    internalIpldNodeMinter: (cid: ICid) => MerklingProxyRef
+  ): (obj: any, key: string | number | symbol, v: any) => boolean {
+    return (obj: any, key: string | number | symbol, v: any): boolean => {
+      if (CID.isCID(v)) {
+        obj[key] = internalIpldNodeMinter(v)
+        return true
+      } else {
+        return false
+      }
+    }
+  }
 
   private _merkleRefToIpldRef(
     obj: any,
@@ -31,30 +51,10 @@ export default class Serialiser {
     }
   }
 
-  // private _IpldRefToMerkleRef(
-  //   obj: any,
-  //   key: string | number | symbol,
-  //   v: any
-  // ): boolean {
-  //   if ('/' in v) {
-  //     const hash: string = v['/']
-  //     obj[key] = new MerklingProxyRef({
-  //       internalId:
-  //     })
-  //     return true
-  //   } else {
-  //     return false
-  //   }
-  // }
-
   private _cloneAndSubstitute(
-    // eslint-disable-next-line
     obj: any,
-    // eslint-disable-next-line
     substitution: (o: any, key: string | number | symbol, v: any) => boolean
-    // eslint-disable-next-line
   ): any {
-    // eslint-disable-next-line
     var clone: any = {}
 
     for (var i in obj) {
