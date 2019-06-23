@@ -1,5 +1,5 @@
 {
-  "modulePathIgnorePatterns": ["test/integration"],
+  "modulePathIgnorePatterns": ["/node_modules/", "test/integration"],
   "collectCoverageFrom": [
     "src/**/*.{js,jsx,ts,tsx}",
     "!src/index.js",
