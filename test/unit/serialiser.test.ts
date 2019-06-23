@@ -42,6 +42,27 @@ describe('serialiser', () => {
     })
   })
 
+  describe('simple pojo with array', () => {
+    // eslint-disable-next-line
+    let simplePojoWithArray: any
+
+    beforeEach(() => {
+      simplePojoWithArray = { a: [{ b: 1 }, { c: 2 }] }
+    })
+
+    it('returns a clone', () => {
+      expect(serialiser.serialise(simplePojoWithArray)).not.toBe(
+        simplePojoWithArray
+      )
+    })
+
+    it('returns a structurally identical object', () => {
+      expect(serialiser.serialise(simplePojoWithArray)).toStrictEqual(
+        simplePojoWithArray
+      )
+    })
+  })
+
   describe('nested pojo', () => {
     // eslint-disable-next-line
     let nestedPojo: any
@@ -94,6 +115,35 @@ describe('serialiser', () => {
         a: 1,
         b: 'text',
         c: cid1
+      })
+    })
+  })
+
+  describe('simple obj with IPLD ref in array', () => {
+    // eslint-disable-next-line
+    let pojoWithRefInArray: any
+
+    beforeEach(() => {
+      pojoWithRefInArray = {
+        a: [
+          new MerklingProxyRef({
+            internalId: 1,
+            type: MerklingProxyType.IPLD,
+            path: []
+          })
+        ]
+      }
+    })
+
+    it('returns a clone', () => {
+      expect(serialiser.serialise(pojoWithRefInArray)).not.toBe(
+        pojoWithRefInArray
+      )
+    })
+
+    it('returns a structurally identical object', () => {
+      expect(serialiser.serialise(pojoWithRefInArray)).toStrictEqual({
+        a: [cid1]
       })
     })
   })

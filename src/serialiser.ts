@@ -55,7 +55,7 @@ export default class Serialiser {
     obj: any,
     substitution: (o: any, key: string | number | symbol, v: any) => boolean
   ): any {
-    var clone: any = {}
+    var clone: any = Array.isArray(obj) ? [] : {}
 
     for (var i in obj) {
       if (obj[i] != null && typeof obj[i] === 'object') {

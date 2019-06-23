@@ -99,4 +99,12 @@ export class Merkling {
   createSession(): MerklingSession {
     return new MerklingSession({ ipfs: this._ipfs })
   }
+
+  async withSession(
+    sessionAction: (session: MerklingSession) => void
+  ): Promise<void> {
+    const session = this.createSession()
+
+    await sessionAction(session)
+  }
 }
