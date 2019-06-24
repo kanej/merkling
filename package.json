@@ -59,18 +59,16 @@
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
-    "ipfs": "^0.35.0",
+    "ipfs": "^0.36.4",
     "ipfs-http-client": "^32.0.1",
     "jest": "^24.8.0",
     "pre-commit": "^1.2.2",
     "prettier": "^1.17.0",
     "rimraf": "^2.6.2",
-    "semantic-release": "^12.4.1",
+    "semantic-release": "^15.13.16",
     "source-map-loader": "^0.2.4",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.4.5",
-    "webpack": "^3.11.0",
-    "webpack-dev-server": "^2.11.1"
+    "typescript": "^3.4.5"
   },
   "standard": {
     "env": [
