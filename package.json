@@ -10,7 +10,8 @@
     "type": "git",
     "url": "https://github.com/kanej/merkling.git"
   },
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "jest --runInBand --coverage --config=jest.unit.json",
