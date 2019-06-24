@@ -1,31 +1,10 @@
 TODO
 ====
 
-Chores
-------
-
-* [x] Add code coverage
-* [ ] Add standard readme
-* [ ] Add circleci build
-* [ ] Rejig webpack build
-    - [ ] Exclude ipfs
-    - [ ] full and minified in dist
-    - [ ] html plugin for dev
-* [ ] setup semantic releases
-
-Features
---------
-
-* [ ] Load node
-* [ ] Enhance proxy to hide merkling symbols
-
-Tests
------
-
-* [ ] Understand equality and proxies better
-* [ ] Browser based tests with karma
-
-Development
------------
-
-* [ ] Hook up vs code debugging against node and browser
+* Nested resolving of proxies
+    - Substitute cid to ref on get from ipfs
+* Cleanup type declarations around ICid and cids
+* Throw on accessing data on unloaded proxy
+* Creating nodes with nested IPLD proxies
+* Setting nodes with nested IPLD proxies
+* Recurse flag on get

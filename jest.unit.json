@@ -1,0 +1,12 @@
+{
+  "modulePathIgnorePatterns": ["/node_modules/", "test/integration"],
+  "collectCoverageFrom": [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/index.js",
+    "!<rootDir>/node_modules/",
+    "!<rootDir>/test/"
+  ],
+  "transform": {
+    "^.+\\.tsx?$": "ts-jest"
+  }
+}

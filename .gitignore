@@ -62,7 +62,8 @@ typings/
 
 .DS_Store
 
-scratch.js
+scratch*.js
 read.js
 
-.ipfs-test/
+.test-ipfs/
+dist/
