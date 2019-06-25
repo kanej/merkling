@@ -42,7 +42,7 @@ export default class InternalGraph {
   ancestorsOf(vertex: number): number[] {
     const searchState = this._setupSearchState()
     searchState.unmarked.delete(vertex)
-    searchState.marked.add(vertex)
+
     this._visit(vertex, this._parents, searchState)
     return searchState.l.reverse()
   }
