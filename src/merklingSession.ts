@@ -1,5 +1,4 @@
 import CID from 'cids'
-import { IIpfsNode, ICid } from './merkling'
 import {
   IMerklingInternalRecord,
   MerklingProxyType,
@@ -11,13 +10,20 @@ import {
 import IpfsWrapper from './ipfsWrapper'
 import Serialiser from './serialiser'
 import InternalGraph from './internalGraph'
+import { IIpfsNode, ICid } from './domain'
 
 export default class MerklingSession {
+  /** @private the IPFS node */
   _ipfs: IpfsWrapper
+  /** @private the internal counter of IPLD blocks loaded into the session */
   _ipldIdCounter: number
+  /** @private the identity map and internal record keeping of the loaded IPLD blocks */
   _ipldNodeEntries: Map<number, IMerklingInternalRecord>
+  /** @private a mapping proxies that exist in the session */
   _proxies: Map<string, {}>
+  /** @private the serialiser and deserialization layer on going to and from IPFS */
   _serialiser: Serialiser
+  /** @private the internal graph of IPLD block to IPLD block relationships */
   _internalGraph: InternalGraph
 
   constructor({ ipfs }: { ipfs: IIpfsNode }) {
@@ -46,6 +52,13 @@ export default class MerklingSession {
     )
   }
 
+  /**
+   * Create a new dirty Merkling proxy that can be manipulated
+   * before later being persisted.
+   *
+   * @param objState a js object of the state for the IPLD block
+   * @returns a proxy representing the given state as an IPLD block
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   create<T>(objState: T): T {
     if (objState === null || typeof objState !== 'object') {
@@ -80,8 +93,14 @@ export default class MerklingSession {
     return (proxy as any) as T
   }
 
-  async get(hash: string | ICid): Promise<{}> {
-    const cid = this._toCid(hash)
+  /**
+   * Get an IPLD block from IPFS and return
+   * it as a tracked Merkling proxy.
+   * @param hashOrCid a CID or base encoded version
+   * @returns a clean proxy with the state loaded and accessible
+   */
+  async get(hashOrCid: string | ICid): Promise<{}> {
+    const cid = this._toCid(hashOrCid)
     const state = await this._readStateFromIpfs(cid)
 
     const record: IMerklingInternalRecord = {
@@ -125,6 +144,10 @@ export default class MerklingSession {
     return proxy
   }
 
+  /**
+   * Save all proxies that are currently marked as dirty,
+   * and any proxies that depend on them.
+   */
   async save(): Promise<void> {
     for (const ipldNodeId of this._internalGraph.topologicalSort()) {
       const entry = this._ipldNodeEntries.get(ipldNodeId)
@@ -137,6 +160,30 @@ export default class MerklingSession {
 
       await this._recursiveSaveIpldNode(entry)
     }
+  }
+
+  /**
+   * @private Given a merkling ref, retreive its state
+   * from IPFS and update the internal record.
+   *
+   * @param ref a proxy ref to resolve
+   * @returns a promise complete with the retrieval
+   */
+  async _resolveRef(ref: MerklingProxyRef): Promise<void> {
+    const record = this._ipldNodeEntries.get(ref.internalId)
+
+    if (!record) {
+      return
+    }
+
+    if (!record.cid) {
+      throw new Error('Attempt to resolve ref without CID')
+    }
+
+    const state = await this._readStateFromIpfs(record.cid)
+
+    record.state = state
+    record.lifecycleState = MerklingLifecycleState.CLEAN
   }
 
   private _loadCidIntoSession(hash: string | ICid): MerklingProxyRef {
@@ -157,23 +204,6 @@ export default class MerklingSession {
     this._addIpldNodeEntry(record)
 
     return proxyId
-  }
-
-  async _resolveRef(ref: MerklingProxyRef): Promise<void> {
-    const record = this._ipldNodeEntries.get(ref.internalId)
-
-    if (!record) {
-      return
-    }
-
-    if (!record.cid) {
-      throw new Error('Attempt to resolve ref without CID')
-    }
-
-    const state = await this._readStateFromIpfs(record.cid)
-
-    record.state = state
-    record.lifecycleState = MerklingLifecycleState.CLEAN
   }
 
   private _addIpldNodeEntry(record: IMerklingInternalRecord): void {

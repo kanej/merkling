@@ -1,7 +1,8 @@
 import MerklingSession from '../../src/merklingSession'
-import { Merkling, ICid } from '../../src/merkling'
+import { Merkling } from '../../src/merkling'
 import setupMockIpfs, { MockIpfs } from './mockIpfs'
 import { toCid } from './helpers'
+import { ICid } from '../../src/domain'
 
 const exampleHash1 =
   'zBwWX6kDxnbb7xaRuCVxS5qrQpHMrmY8JydAnwk5KYDG5mrkybgSDZaRDoSoqTZjP86NkqUKu1WvNd7RKvLXM5ocrpZkh'

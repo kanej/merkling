@@ -1,5 +1,5 @@
 import CID from 'cids'
-import { ICid } from '../../src/merkling'
+import { ICid } from '../../src/domain'
 
 export const toCid = (text: string): ICid => {
   // eslint-disable-next-line

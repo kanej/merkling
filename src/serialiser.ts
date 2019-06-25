@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CID from 'cids'
 import { MerklingProxyRef } from './merklingProxyHandler'
-import { ICid } from './merkling'
+import { ICid } from './domain'
 
 export default class Serialiser {
   private _internalIdToCidEncoder: (id: number) => ICid

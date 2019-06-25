@@ -1,4 +1,4 @@
-import { IIpfsNode, ICid } from '../../src/merkling'
+import { IIpfsNode, ICid } from '../../src/domain'
 
 interface ISharedState {
   saveCalls: number

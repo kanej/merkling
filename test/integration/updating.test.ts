@@ -1,5 +1,6 @@
-import { Merkling, ICid } from '../../src/merkling'
+import { Merkling } from '../../src/merkling'
 import { setupIpfsNode, shutdownIpfsNode } from './helpers'
+import { ICid } from '../../src/domain'
 
 describe('Persisting', () => {
   // eslint-disable-next-line

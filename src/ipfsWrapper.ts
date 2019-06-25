@@ -1,4 +1,4 @@
-import { IIpfsNode, ICid, IIpldNode } from './merkling'
+import { IIpfsNode, ICid, IIpldNode } from './domain'
 
 export default class IpfsWrapper {
   _ipfs: IIpfsNode

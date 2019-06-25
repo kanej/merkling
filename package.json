@@ -20,7 +20,7 @@
     "lint": "eslint --fix .\\{src,test}\\**\\*.ts",
     "build": "tsc",
     "dev": "webpack-dev-server --open",
-    "docs-readme": "documentation readme --section=API src/merkling.js",
+    "docs-readme": "documentation readme --config documentation.yml --document-exported --section=API --github src/merkling.ts src/merklingSession.ts",
     "docs": "documentation build --format html --theme node_modules/clean-documentation-theme --o docs",
     "docs-dev": "documentation serve --watch --theme node_modules/clean-documentation-theme",
     "semantic-release": "semantic-release"
@@ -50,7 +50,7 @@
     "clean-documentation-theme": "^0.5.2",
     "clean-webpack-plugin": "^0.1.18",
     "cz-conventional-changelog": "^2.1.0",
-    "documentation": "^5.4.0",
+    "documentation": "^11.0.1",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
     "eslint-config-standard": "^12.0.0",

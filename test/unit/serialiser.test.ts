@@ -3,7 +3,7 @@ import {
   MerklingProxyRef,
   MerklingProxyType
 } from '../../src/merklingProxyHandler'
-import { ICid } from '../../src/merkling'
+import { ICid } from '../../src/domain'
 import { toCid } from './helpers'
 
 const exampleHash1 =

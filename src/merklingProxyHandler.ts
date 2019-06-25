@@ -11,7 +11,8 @@ import {
   getRefSymbol,
   resolveSymbol
 } from './symbols'
-import { ICid, Merkling } from './merkling'
+import { Merkling } from './merkling'
+import { ICid } from './domain'
 
 type ProxyKey = string | symbol | number
 
