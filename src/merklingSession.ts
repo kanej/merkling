@@ -99,7 +99,8 @@ export default class MerklingSession {
    * @param hashOrCid a CID or base encoded version
    * @returns a clean proxy with the state loaded and accessible
    */
-  async get(hashOrCid: string | ICid): Promise<{}> {
+  // eslint-disable-next-line
+  async get(hashOrCid: string | ICid): Promise<any> {
     const cid = this._toCid(hashOrCid)
     const state = await this._readStateFromIpfs(cid)
 
@@ -184,6 +185,37 @@ export default class MerklingSession {
 
     record.state = state
     record.lifecycleState = MerklingLifecycleState.CLEAN
+  }
+
+  /**
+   * @private Given an internal record mark it as dirty and
+   * all loaded ancestors in the graph.
+   *
+   * @param internalId
+   */
+  _markRecordAndAncestorsAsDirty(internalId: number): void {
+    const recordAndAncestorsIds = this._internalGraph.ancestorsOf(internalId)
+
+    let currentId = recordAndAncestorsIds.pop()
+
+    if (!currentId) {
+      throw Error('Internal graph returned no nodes in the ancestor lookup')
+    }
+
+    while (currentId !== undefined) {
+      let currentRecord = this._ipldNodeEntries.get(currentId)
+
+      if (!currentRecord) {
+        throw new Error(
+          'Internal graph returned an internal id of a non-existant IPLD block'
+        )
+      }
+
+      currentRecord.lifecycleState = MerklingLifecycleState.DIRTY
+      currentRecord.cid = null
+
+      currentId = recordAndAncestorsIds.pop()
+    }
   }
 
   private _loadCidIntoSession(hash: string | ICid): MerklingProxyRef {

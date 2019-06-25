@@ -112,4 +112,70 @@ describe('Persisting', () => {
       }
     })
   })
+
+  interface IPhilosopher {
+    name: string
+    taught?: IPhilosopher
+  }
+
+  it('persists the parents when a child is edited and session saved', async () => {
+    let originCid: ICid | null | undefined
+    let updatedCid: ICid | null | undefined
+
+    await merkling.withSession(async session => {
+      const socrates: IPhilosopher = session.create({ name: 'Socrates' })
+      const plato: IPhilosopher = session.create({ name: 'Plato' })
+      const aristotle = session.create({ name: 'Aristotle' })
+
+      socrates.taught = plato
+      plato.taught = aristotle
+
+      await session.save()
+
+      originCid = Merkling.cid(socrates)
+    })
+
+    expect(originCid).toBeTruthy()
+
+    await merkling.withSession(async session => {
+      const socrates = (await session.get(originCid as ICid)) as IPhilosopher
+
+      const plato = socrates.taught as IPhilosopher
+      await Merkling.resolve(plato)
+
+      const aristotle = plato.taught as IPhilosopher
+      await Merkling.resolve(aristotle)
+
+      aristotle.taught = session.create({ name: 'Alex' })
+
+      expect(Merkling.isDirty(aristotle)).toBe(true)
+      expect(Merkling.isDirty(plato)).toBe(true)
+      expect(Merkling.isDirty(socrates)).toBe(true)
+
+      await session.save()
+
+      updatedCid = Merkling.cid(socrates)
+    })
+
+    expect(updatedCid).toBeTruthy()
+
+    expect((updatedCid as ICid).toBaseEncodedString()).not.toBe(
+      (originCid as ICid).toBaseEncodedString()
+    )
+
+    await merkling.withSession(async session => {
+      const socrates = (await session.get(updatedCid as ICid)) as IPhilosopher
+
+      const plato = socrates.taught as IPhilosopher
+      await Merkling.resolve(plato)
+
+      const aristotle = plato.taught as IPhilosopher
+      await Merkling.resolve(aristotle)
+
+      const alex = aristotle.taught as IPhilosopher
+      await Merkling.resolve(alex)
+
+      expect(alex.name).toBe('Alex')
+    })
+  })
 })
