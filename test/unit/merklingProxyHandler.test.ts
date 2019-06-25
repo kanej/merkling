@@ -21,7 +21,8 @@ describe('Merkling Proxy Handler', () => {
         _proxies: new Map<string, IMerklingProxyState>(),
         _stateObjToParentRecord: {
           has: () => false
-        }
+        },
+        _markRecordAndAncestorsAsDirty: () => {}
       }
 
       originalState = {
@@ -110,7 +111,8 @@ describe('Merkling Proxy Handler', () => {
         _ipldNodeEntries: new Map<number, IMerklingInternalRecord>(),
         _stateObjToParentRecord: {
           has: () => false
-        }
+        },
+        _markRecordAndAncestorsAsDirty: () => {}
       }
 
       originalState = {

@@ -179,6 +179,11 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
     let proxyId: MerklingProxyRef
     if ('isRef' in value && value.isRef()) {
       proxyId = value as MerklingProxyRef
+
+      target.session._internalGraph.link(
+        target.ref.internalId,
+        proxyId.internalId
+      )
     } else {
       proxyId = new MerklingProxyRef({
         internalId: target.ref.internalId,
@@ -203,6 +208,7 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
 
     return internalProxy
   },
+
   set(
     target: IMerklingProxyState,
     key: string | number | symbol,
@@ -223,8 +229,7 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
       record.lifecycleState = MerklingLifecycleState.CLEAN
       return true
     } else {
-      record.lifecycleState = MerklingLifecycleState.DIRTY
-      record.cid = null
+      target.session._markRecordAndAncestorsAsDirty(record.internalId)
 
       if (Merkling.isProxy(value)) {
         if (!Merkling.isIpldNode(value)) {

@@ -141,8 +141,6 @@ main()
 
 ### Merkling
 
-[src/merkling.ts:18-148](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L18-L148 "Source code on GitHub")
-
 The core IPLD access client.
 
 #### Parameters
@@ -151,16 +149,12 @@ The core IPLD access client.
 
 #### createSession
 
-[src/merkling.ts:31-33](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L31-L33 "Source code on GitHub")
-
 Create a new merkling session to act as an
 intermediary with the IPFS node.
 
 Returns **[MerklingSession](#merklingsession)** a new merkling session
 
 #### withSession
-
-[src/merkling.ts:42-48](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L42-L48 "Source code on GitHub")
 
 Run an action in the form of a callback over a new session
 that is disposed of afterwards.
@@ -172,8 +166,6 @@ that is disposed of afterwards.
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>** a promise that completes after the session action
 
 #### cid
-
-[src/merkling.ts:59-69](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L59-L69 "Source code on GitHub")
 
 Retrieve the CID for given proxy. Will returned
 undefined if the passed object is not a Merkling proxy
@@ -188,8 +180,6 @@ have a CID or null if it is currently dirty
 
 #### resolve
 
-[src/merkling.ts:78-86](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L78-L86 "Source code on GitHub")
-
 Asynchronously force the retrieval of the state
 stored in IPFS of the IPLD block the proxy represents.
 
@@ -200,8 +190,6 @@ stored in IPFS of the IPLD block the proxy represents.
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[Proxy](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Proxy)>** the given proxy now loaded and clean.
 
 #### inspect
-
-[src/merkling.ts:96-102](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L96-L102 "Source code on GitHub")
 
 Retreive the stored state that the Merkling proxy
 is representing. This will include references
@@ -215,8 +203,6 @@ Returns **{}** the internal state of the IPLD block being represented
 
 #### isProxy
 
-[src/merkling.ts:111-117](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L111-L117 "Source code on GitHub")
-
 Determine whether a given object is a tracked Merkling
 proxy.
 
@@ -227,8 +213,6 @@ proxy.
 Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** the answer
 
 #### isIpldNode
-
-[src/merkling.ts:126-132](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L126-L132 "Source code on GitHub")
 
 Determine whether a given object is a Merkling
 proxy representing an IPLD block.
@@ -241,8 +225,6 @@ Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 #### isDirty
 
-[src/merkling.ts:141-147](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merkling.ts#L141-L147 "Source code on GitHub")
-
 Determine if a proxy has unsaved changes. Will
 return true if the passed object is not a proxy.
 
@@ -254,16 +236,12 @@ Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ### MerklingSession
 
-[src/merklingSession.ts:15-258](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merklingSession.ts#L15-L258 "Source code on GitHub")
-
 #### Parameters
 
 -   `$0` **{ipfs: IIpfsNode}** 
     -   `$0.ipfs`  
 
 #### create
-
-[src/merklingSession.ts:63-94](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merklingSession.ts#L63-L94 "Source code on GitHub")
 
 Create a new dirty Merkling proxy that can be manipulated
 before later being persisted.
@@ -276,8 +254,6 @@ Returns **T** a proxy representing the given state as an IPLD block
 
 #### get
 
-[src/merklingSession.ts:102-131](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merklingSession.ts#L102-L131 "Source code on GitHub")
-
 Get an IPLD block from IPFS and return
 it as a tracked Merkling proxy.
 
@@ -285,11 +261,9 @@ it as a tracked Merkling proxy.
 
 -   `hashOrCid` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | ICid)** a CID or base encoded version
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;{}>** a clean proxy with the state loaded and accessible
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;any>** a clean proxy with the state loaded and accessible
 
 #### load
-
-[src/merklingSession.ts:133-145](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merklingSession.ts#L133-L145 "Source code on GitHub")
 
 ##### Parameters
 
@@ -298,8 +272,6 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 Returns **IMerklingProxyState** 
 
 #### save
-
-[src/merklingSession.ts:151-163](https://git@github.com/:kanej/merkling/blob/46e0188cc293ab2997b3e29e0b34956f173ad6e4/src/merklingSession.ts#L151-L163 "Source code on GitHub")
 
 Save all proxies that are currently marked as dirty,
 and any proxies that depend on them.
