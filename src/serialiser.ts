@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CID from 'cids'
-import { MerklingProxyRef } from './merklingProxyHandler'
+import { MerklingProxyRef, IMerklingProxyRef } from './merklingProxyHandler'
 import { ICid } from './domain'
+import { isProxySymbol, getRefSymbol } from './symbols'
 
 export default class Serialiser {
   private _internalIdToCidEncoder: (id: number) => ICid
@@ -21,6 +22,13 @@ export default class Serialiser {
     return this._cloneAndSubstitute(
       obj,
       this._merkleRefToIpldRefBuilder(internalIpldNodeMinter)
+    )
+  }
+
+  internalise(obj: any, internalLinker: (internalId: number) => void): any {
+    return this._cloneAndSubstitute(
+      obj,
+      this._merkleProxyToMerkleRefBuilder(internalLinker)
     )
   }
 
@@ -48,6 +56,21 @@ export default class Serialiser {
       return true
     } else {
       return false
+    }
+  }
+
+  private _merkleProxyToMerkleRefBuilder(
+    internalLinker: (internalId: number) => void
+  ): (obj: any, key: string | number | symbol, v: any) => boolean {
+    return (obj: any, key: string | number | symbol, v: any): boolean => {
+      if (v[isProxySymbol]) {
+        const ref = v[getRefSymbol] as IMerklingProxyRef
+        obj[key] = ref
+        internalLinker(ref.internalId)
+        return true
+      } else {
+        return false
+      }
     }
   }
 

@@ -178,4 +178,78 @@ describe('Persisting', () => {
       expect(alex.name).toBe('Alex')
     })
   })
+
+  it('persists and updates when the children are inside an array', async () => {
+    let feedCid: ICid | null = null
+    await merkling.withSession(async session => {
+      // eslint-disable-next-line
+      const feed: any = session.create({
+        title: 'Thoughts',
+        author: 'anon',
+        posts: []
+      })
+
+      // eslint-disable-next-line
+      const post1: any = session.create({
+        text: 'A beginning'
+      })
+
+      // eslint-disable-next-line
+      const post2: any = session.create({
+        text: 'A middle'
+      })
+
+      // eslint-disable-next-line
+      const post3: any = session.create({
+        text: 'An end'
+      })
+
+      post1.next = post2
+      post2.next = post3
+
+      feed.posts = [post1, post2, post3]
+
+      await session.save()
+
+      feedCid = Merkling.cid(feed) as ICid
+    })
+
+    expect(feedCid).toBeTruthy()
+
+    let updateFeedCid: ICid | null = null
+    await merkling.withSession(async session => {
+      const savedFeed = await session.get(feedCid as ICid)
+
+      for (const post of savedFeed.posts) {
+        await Merkling.resolve(post)
+      }
+
+      savedFeed.posts[1].text = 'A longer middle'
+
+      await session.save()
+
+      updateFeedCid = Merkling.cid(savedFeed) as ICid
+    })
+
+    expect(updateFeedCid).toBeTruthy()
+    // eslint-disable-next-line
+    expect(((updateFeedCid as any) as ICid).toBaseEncodedString()).not.toBe(
+      // eslint-disable-next-line
+      ((feedCid as any) as ICid).toBaseEncodedString()
+    )
+
+    await merkling.withSession(async session => {
+      const savedFeed = await session.get(updateFeedCid as ICid)
+
+      for (const post of savedFeed.posts) {
+        await Merkling.resolve(post)
+      }
+
+      expect(savedFeed.title).toBe('Thoughts')
+      expect(savedFeed.author).toBe('anon')
+      expect(savedFeed.posts[0].text).toBe('A beginning')
+      expect(savedFeed.posts[1].text).toBe('A longer middle')
+      expect(savedFeed.posts[2].text).toBe('An end')
+    })
+  })
 })
