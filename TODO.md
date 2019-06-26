@@ -5,7 +5,7 @@
 - [ ] Cleanup type declarations around ICid and cids
 - [ ] Throw on accessing data on unloaded proxy
 - [x] Creating nodes with nested IPLD proxies
-- [ ] Setting nodes with nested IPLD proxies
+- [x] Setting nodes with nested IPLD proxies
 - [ ] Recurse flag on get
 
 ## Bugs

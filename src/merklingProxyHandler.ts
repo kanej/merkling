@@ -158,7 +158,7 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
     }
 
     if (key === getStateSymbol) {
-      return record.state
+      return state
     }
 
     if (key === getCidSymbol) {
@@ -212,7 +212,8 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
   set(
     target: IMerklingProxyState,
     key: string | number | symbol,
-    value: ICid
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: any
   ): boolean {
     const { record, state } = lookupRecordAndState(target)
 
@@ -243,6 +244,9 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
           ref.internalId
         )
         return Reflect.set(state, key, ref)
+      } else if (value != null && typeof value === 'object') {
+        const internalisedValue = target.session._serialiser.internalise(value)
+        return Reflect.set(state, key, internalisedValue)
       } else {
         return Reflect.set(state, key, value)
       }
