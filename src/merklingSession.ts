@@ -12,6 +12,12 @@ import Serialiser from './serialiser'
 import InternalGraph from './internalGraph'
 import { IIpfsNode, ICid } from './domain'
 
+interface IInternalisedStateResult {
+  // eslint-disable-next-line
+  state: any
+  childInternalIds: number[]
+}
+
 export default class MerklingSession {
   /** @private the IPFS node */
   _ipfs: IpfsWrapper
@@ -65,13 +71,13 @@ export default class MerklingSession {
       return objState
     }
 
-    const internalisedState = this._serialiser.internalise(objState)
+    const { state, childInternalIds } = this._internaliseState(objState)
     const record: IMerklingInternalRecord = {
       internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.DIRTY,
       cid: null,
-      state: internalisedState
+      state: state
     }
 
     const proxyId: MerklingProxyRef = new MerklingProxyRef({
@@ -89,6 +95,10 @@ export default class MerklingSession {
     )
 
     this._addIpldNodeEntry(record)
+
+    for (const childInternalId of childInternalIds) {
+      this._internalGraph.link(record.internalId, childInternalId)
+    }
 
     // eslint-disable-next-line
     return (proxy as any) as T
@@ -216,6 +226,21 @@ export default class MerklingSession {
       currentRecord.cid = null
 
       currentId = recordAndAncestorsIds.pop()
+    }
+  }
+
+  // eslint-disable-next-line
+  _internaliseState(obj: any): IInternalisedStateResult {
+    const childIds = new Set<number>()
+    const internalLinker = (internalId: number): void => {
+      childIds.add(internalId)
+    }
+
+    const internalisedState = this._serialiser.internalise(obj, internalLinker)
+
+    return {
+      state: internalisedState,
+      childInternalIds: Array.from(childIds)
     }
   }
 

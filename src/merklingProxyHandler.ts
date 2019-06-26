@@ -245,7 +245,7 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
         )
         return Reflect.set(state, key, ref)
       } else if (value != null && typeof value === 'object') {
-        const internalisedValue = target.session._serialiser.internalise(value)
+        const internalisedValue = target.session._internaliseState(value)
         return Reflect.set(state, key, internalisedValue)
       } else {
         return Reflect.set(state, key, value)
