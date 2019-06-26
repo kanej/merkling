@@ -169,6 +169,12 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
       return target
     }
 
+    if (record.lifecycleState === MerklingLifecycleState.UNLOADED) {
+      throw new Error(
+        'Cannot perform property access on an unloaded proxy, try using `Merkling.resolve` first'
+      )
+    }
+
     // eslint-disable-next-line
     const value = (state as any)[key]
 
@@ -219,6 +225,12 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
 
     if (!record || !state) {
       return false
+    }
+
+    if (record.lifecycleState === MerklingLifecycleState.UNLOADED) {
+      throw new Error(
+        'Cannot set an unloaded proxy, try using Merkling.resolve first'
+      )
     }
 
     if (key === setCidSymbol) {

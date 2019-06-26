@@ -12,4 +12,5 @@
 
 - [x] Editing child proxy not setting parent proxy to dirty
 - [ ] Example not working in CRA
-- [ ] Issue with arrays
+- [x] Issue with arrays
+- [ ] Alternate acces in usage example doesn't save
