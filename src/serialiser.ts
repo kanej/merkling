@@ -2,6 +2,7 @@
 import CID from 'cids'
 import { MerklingProxyRef } from './merklingProxyHandler'
 import { ICid } from './domain'
+import { isProxySymbol, getRefSymbol } from './symbols'
 
 export default class Serialiser {
   private _internalIdToCidEncoder: (id: number) => ICid
@@ -21,6 +22,13 @@ export default class Serialiser {
     return this._cloneAndSubstitute(
       obj,
       this._merkleRefToIpldRefBuilder(internalIpldNodeMinter)
+    )
+  }
+
+  internalise(obj: any): any {
+    return this._cloneAndSubstitute(
+      obj,
+      this._merkleProxyToMerkleRef.bind(this)
     )
   }
 
@@ -45,6 +53,20 @@ export default class Serialiser {
     if ('isRef' in v && v.isRef) {
       const ref = v as MerklingProxyRef
       obj[key] = this._internalIdToCidEncoder(ref.internalId)
+      return true
+    } else {
+      return false
+    }
+  }
+
+  private _merkleProxyToMerkleRef(
+    obj: any,
+    key: string | number | symbol,
+    v: any
+  ): boolean {
+    if (v[isProxySymbol]) {
+      const ref = v[getRefSymbol]
+      obj[key] = ref
       return true
     } else {
       return false

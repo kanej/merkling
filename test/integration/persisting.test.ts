@@ -158,4 +158,39 @@ describe('Persisting', () => {
     expect(Merkling.isIpldNode(savedProxy.posts)).toBe(true)
     expect(Merkling.isIpldNode(savedProxy.posts.next)).toBe(true)
   })
+
+  it('saves proxies created nested within each other', async () => {
+    let savedCid: ICid
+    await merkling.withSession(async session => {
+      const socrates = session.create({
+        name: 'socrates',
+        taught: session.create({
+          name: 'plato',
+          taught: session.create({
+            name: 'aristotle'
+          })
+        })
+      })
+
+      expect(Merkling.isIpldNode(socrates)).toBe(true)
+      expect(Merkling.isIpldNode(socrates.taught)).toBe(true)
+      expect(Merkling.isIpldNode(socrates.taught.taught)).toBe(true)
+
+      await session.save()
+
+      savedCid = Merkling.cid(socrates) as ICid
+    })
+
+    await merkling.withSession(async session => {
+      const socrates = await session.get(savedCid)
+
+      const plato = socrates.taught
+      await Merkling.resolve(plato)
+
+      const aristotle = plato.taught
+      await Merkling.resolve(aristotle)
+
+      expect(aristotle.name).toBe('aristotle')
+    })
+  })
 })

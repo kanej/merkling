@@ -65,12 +65,13 @@ export default class MerklingSession {
       return objState
     }
 
+    const internalisedState = this._serialiser.internalise(objState)
     const record: IMerklingInternalRecord = {
       internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,
       lifecycleState: MerklingLifecycleState.DIRTY,
       cid: null,
-      state: objState
+      state: internalisedState
     }
 
     const proxyId: MerklingProxyRef = new MerklingProxyRef({
