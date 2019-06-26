@@ -39,7 +39,7 @@ See the [usage section](#usage) for an example.
 ## Install
 
 ```bash
-npm install --save merkling
+npm install --save merkling@alpha
 ```
 
 ## Usage
@@ -77,9 +77,8 @@ const main = async () => {
 
     post1.next = post2
     post2.next = post3
-    feed.posts[0] = post1
-    feed.posts[1] = post2
-    feed.posts[2] = post3
+
+    feed.posts = [post1, post2, post3]
 
     await session.save()
 
@@ -87,8 +86,24 @@ const main = async () => {
     console.log(`Feed CID: ${feedCid.toBaseEncodedString()}`)
   })
 
+  let updateFeedCid
   await merkling.withSession(async session => {
     const savedFeed = await session.get(feedCid)
+
+    for (const post of savedFeed.posts) {
+      await Merkling.resolve(post)
+    }
+
+    savedFeed.posts[1].text = 'A longer middle'
+
+    await session.save()
+
+    updateFeedCid = Merkling.cid(savedFeed)
+    console.log(`Updated Feed CID: ${updateFeedCid.toBaseEncodedString()}`)
+  })
+
+  await merkling.withSession(async session => {
+    const savedFeed = await session.get(updateFeedCid)
 
     console.log('')
     console.log(`Title: ${savedFeed.title} by ${savedFeed.author}`)
