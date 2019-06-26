@@ -1,6 +1,6 @@
 {
   "name": "merkling",
-  "version": "0.0.0-development",
+  "version": "0.1.0-alpha",
   "description": "JS Object to IPLD mapping layer",
   "homepage": "https://github.com/kanej/merkling",
   "bugs": {
@@ -15,9 +15,9 @@
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "jest --runInBand --coverage --config=jest.unit.json",
-    "pretest:integration": "rimraf .\\.test-ipfs",
+    "pretest:integration": "rimraf ./.test-ipfs",
     "test:integration": "jest --detectOpenHandles --runInBand --config=jest.integration.json",
-    "lint": "eslint --fix .\\{src,test}\\**\\*.ts",
+    "lint": "eslint --fix ./{src,test}/**/*.ts",
     "build": "tsc",
     "dev": "webpack-dev-server --open",
     "docs-readme": "documentation readme --config documentation.yml --document-exported --section=API src/merkling.ts src/merklingSession.ts",
@@ -59,7 +59,6 @@
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
-    "ipfs": "^0.36.4",
     "ipfs-http-client": "^32.0.1",
     "jest": "^24.8.0",
     "pre-commit": "^1.2.2",
