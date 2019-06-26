@@ -98,7 +98,7 @@ const lookupRecordAndState = (target: IMerklingProxyState): IRecordAndState => {
 }
 
 export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
-  has: function(target: IMerklingProxyState, key: ProxyKey): boolean {
+  has: function (target: IMerklingProxyState, key: ProxyKey): boolean {
     const { state } = lookupRecordAndState(target)
 
     if (!state) {
@@ -245,7 +245,12 @@ export const merklingProxyHandler: ProxyHandler<IMerklingProxyState> = {
         )
         return Reflect.set(state, key, ref)
       } else if (value != null && typeof value === 'object') {
-        const internalisedValue = target.session._internaliseState(value)
+        const { state: internalisedValue, childInternalIds } = target.session._internaliseState(value)
+
+        for (const childInternalId of childInternalIds) {
+          target.session._internalGraph.link(record.internalId, childInternalId)
+        }
+
         return Reflect.set(state, key, internalisedValue)
       } else {
         return Reflect.set(state, key, value)

@@ -72,6 +72,7 @@ export default class MerklingSession {
     }
 
     const { state, childInternalIds } = this._internaliseState(objState)
+
     const record: IMerklingInternalRecord = {
       internalId: ++this._ipldIdCounter,
       type: MerklingProxyType.IPLD,

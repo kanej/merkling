@@ -226,7 +226,6 @@ describe('Persisting', () => {
 
       savedFeed.posts[1].text = 'A longer middle'
 
-      console.log('Is Dirty?', Merkling.isDirty(savedFeed))
       await session.save()
 
       updateFeedCid = Merkling.cid(savedFeed) as ICid
@@ -244,7 +243,6 @@ describe('Persisting', () => {
 
       for (const post of savedFeed.posts) {
         await Merkling.resolve(post)
-        console.log(post.text)
       }
 
       expect(savedFeed.title).toBe('Thoughts')
