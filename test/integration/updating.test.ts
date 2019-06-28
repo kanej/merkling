@@ -32,7 +32,7 @@ describe('Persisting', () => {
     }
 
     const originalHash =
-      'zBwWX5xGRGty16cZdniYygq3Ndco8txjYTrnCzBm28d2LCxxQDvKJGFER6jchQLPEPx1Lxi29oAK2mXCFhtaQfGkwKirL'
+      'bafyriqbmzovswsiw5ssrp5ftef4kehlns22adtht75mp3hieulfsfhbuooe2ltco2vobe3cgufjkjxj5yy5kvdzxhubrkzg6zxcmffqvsmu4c'
 
     const proxy = session.create(original)
 
@@ -47,7 +47,7 @@ describe('Persisting', () => {
     await session.save()
 
     const updatedHash =
-      'zBwWX5i5TmCBRWhyVtLqPMMEJzPN1xD39S3aw1CJR9nZfak1A8T3Ujst1RcddHwH9pLX5TYub9DVqZ1GA5ZDwvmmZuooW'
+      'bafyriqbar5a5m4wtyxhlxic7yidf5xmvozdob7ke6dqnraeak55jsfjwlp5jng3l5iryjzumbwvvdj7x7vvdey3n6sxqlc3xrpwvi3an2kxcc'
 
     const updatedCid = Merkling.cid(proxy)
 
@@ -82,7 +82,7 @@ describe('Persisting', () => {
     const cid = Merkling.cid(proxy)
 
     const nestedHash =
-      'zBwWX8JMC4q3oynEBf6ExR9DtvTMShsfgYtrXofkpSaMUxmPnjhwKnMorTPnDM1qkLJTJn6tJThwpERsTigjwZH8N3t6z'
+      'bafyriqfcexkidhakmyvywdxhozqawsbd7myl4zknvp4hv4gee2k7zqhgug4xqgf3qjgro2wctji7xnqhxonpeofarwobj3frwzejm2uppcxyo'
 
     expect(cid).toBeTruthy()
     expect((cid as ICid).toBaseEncodedString()).toBe(nestedHash)
@@ -92,7 +92,7 @@ describe('Persisting', () => {
     await session.save()
 
     const updatedHash =
-      'zBwWX6FLK46L6wwmckuXG16ynLvzFtHoaaauCGSAQxb9KZ8QJRYaHYxoQQc5HtsAMWAEKkxNjg3NuixZzdGM5c2gZabNK'
+      'bafyriqb3qn6denw6oyupewno33n3scqg5tjp6iytjhbon6n5od4sud2lc4s6jtbor3iyf7fl74a5yk5rqisfwyogizmt26wa2mujs3zkm5o6i'
 
     const updatedCid = Merkling.cid(proxy)
 

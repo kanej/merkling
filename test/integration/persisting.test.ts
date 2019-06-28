@@ -54,7 +54,7 @@ describe('Persisting', () => {
   it('saves an object with a text property', async () => {
     await checkPersistAndReload(merkling, {
       hash:
-        'zBwWX5L5CfQVRtenLYbHXYCTVPjzToZKqpRrXCjVVcfXHYs15HQCq46ZoWHyhDgtzbwkF3vhnsc7Ub9EhfX7S4qupAZMf',
+        'bafyriqansvyxo7slc4rulstsuyficjoe237yb75ohd7zagerchgp6fnfas6hxa22j5s5qcutgr6g6nex3bgny5obk4ah3czq25jkt66olotym',
       data: {
         text: 'Another'
       }
@@ -64,7 +64,7 @@ describe('Persisting', () => {
   it('saves an object with a nested object', async () => {
     await checkPersistAndReload(merkling, {
       hash:
-        'zBwWX6oEurdDbZCjpHoogfoYp4xtCiLruWncdNrhQFrYCMVzhTEHTiGNAoWugrWv4BS6eDGLqc35vyc8YPszU2CGnQwn3',
+        'bafyriqcxa5tlhjim3fx2z2llzme735swifh7c765healo3epx3nskppadwl3sl345uhx7xgavjqyikui343lycxzopq6xyzketplgaqq4xk5i',
       data: {
         next: { text: 'Another' }
       }
