@@ -2,7 +2,6 @@
   "git.ignoreLimitWarning": true,
   "javascript.validate.enable": false,
   "javascript.format.enable": false,
-  "prettier.eslintIntegration": false,
   "editor.formatOnSave": true,
   "eslint.validate": [
     "javascript",
