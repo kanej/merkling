@@ -1,4 +1,4 @@
-import { Merkling } from '../../src/merkling'
+import Merkling from '../../src/index'
 import MerklingSession from '../../src/merklingSession'
 import setupMockIpfs from './mockIpfs'
 

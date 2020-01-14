@@ -22,6 +22,7 @@ describe('Merkling Proxy Handler', () => {
         _stateObjToParentRecord: {
           has: () => false
         },
+        // eslint-disable-next-line
         _markRecordAndAncestorsAsDirty: () => {}
       }
 
@@ -112,6 +113,7 @@ describe('Merkling Proxy Handler', () => {
         _stateObjToParentRecord: {
           has: () => false
         },
+        // eslint-disable-next-line
         _markRecordAndAncestorsAsDirty: () => {}
       }
 

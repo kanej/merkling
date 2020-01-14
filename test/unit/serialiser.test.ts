@@ -14,12 +14,12 @@ const exampleHash2 =
 describe('serialiser', () => {
   const cid1 = toCid(exampleHash1)
   const cid2 = toCid(exampleHash2)
-  let exampleMappings: { [key: number]: ICid } = {
+  const exampleMappings: { [key: number]: ICid } = {
     1: cid1,
     2: cid2
   }
 
-  let serialiser = new Serialiser(
+  const serialiser = new Serialiser(
     (id: number): ICid => {
       return exampleMappings[id]
     }

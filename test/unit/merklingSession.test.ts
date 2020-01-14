@@ -149,7 +149,7 @@ describe('Session', () => {
 
     describe('dirty', () => {
       describe('simple pojo', () => {
-        let simplePojo = Object.freeze({
+        const simplePojo = Object.freeze({
           text: 'example',
           num: 5,
           bool: true,
@@ -179,7 +179,7 @@ describe('Session', () => {
 
       describe('clean', () => {
         describe('simple pojo', () => {
-          let simplePojo = Object.freeze({
+          const simplePojo = Object.freeze({
             text: 'example',
             num: 5,
             bool: true,
@@ -230,7 +230,7 @@ describe('Session', () => {
     })
 
     describe('simple pojo', () => {
-      let simplePojo = {
+      const simplePojo = {
         text: 'example',
         num: 5,
         bool: true,
@@ -262,7 +262,7 @@ describe('Session', () => {
     })
 
     describe('nested pojo', () => {
-      let nested = {
+      const nested = {
         text: 'root',
         next: {
           text: 'sub'

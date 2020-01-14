@@ -215,7 +215,7 @@ export default class MerklingSession {
     }
 
     while (currentId !== undefined) {
-      let currentRecord = this._ipldNodeEntries.get(currentId)
+      const currentRecord = this._ipldNodeEntries.get(currentId)
 
       if (!currentRecord) {
         throw new Error(

@@ -78,9 +78,9 @@ export default class Serialiser {
     obj: any,
     substitution: (o: any, key: string | number | symbol, v: any) => boolean
   ): any {
-    var clone: any = Array.isArray(obj) ? [] : {}
+    const clone: any = Array.isArray(obj) ? [] : {}
 
-    for (var i in obj) {
+    for (const i in obj) {
       if (obj[i] != null && typeof obj[i] === 'object') {
         if (!substitution(clone, i, obj[i])) {
           clone[i] = this._cloneAndSubstitute(obj[i], substitution)

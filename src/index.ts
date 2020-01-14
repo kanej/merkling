@@ -1,3 +1,3 @@
 import { Merkling } from './merkling'
 
-module.exports = Merkling
+export default Merkling
