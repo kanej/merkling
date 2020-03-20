@@ -1,4 +1,4 @@
-import { IIpfsNode, ICid } from '../../src/domain'
+import { IIpfsNode, ICid, IIpldNode } from '../../src/domain'
 
 interface ISharedState {
   saveCalls: number
@@ -55,25 +55,27 @@ export default function setupMockIpfs() {
   }
 
   const dag = {
-    put(state: {}, _options: {}, callback: Function): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async put(state: {}, _options: {}): Promise<ICid> {
       shared.saveCalls++
 
       if (shared.errorOnPut) {
-        return callback(new Error('Boom!'))
+        throw new Error('Boom!')
       }
 
       const cid = shared.objToCidMapper(state)
 
-      callback(null, cid)
+      return cid
     },
-    get(cid: string, callback: Function): void {
+    async get(cid: string): Promise<IIpldNode> {
       if (shared.errorOnGet) {
-        return callback(new Error('Boom!'))
+        throw new Error('Boom!')
       }
 
       const ipldNode = shared.cidToObjMapping.get(cid)
 
-      callback(null, ipldNode)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return ipldNode as any
     }
   }
 
