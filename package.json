@@ -1,6 +1,6 @@
 {
   "name": "merkling",
-  "version": "2.0.0-alpha.6",
+  "version": "2.0.0-alpha.7",
   "description": "JS Object to IPLD mapping layer",
   "homepage": "https://github.com/kanej/merkling",
   "bugs": {
@@ -19,6 +19,7 @@
     "test:integration": "jest --detectOpenHandles --runInBand --config=jest.integration.json",
     "lint": "eslint --fix ./{src,test}/**/*.ts",
     "build": "tsc",
+    "prepublish": "tsc",
     "dev": "webpack-dev-server --open",
     "docs-readme": "documentation readme --config documentation.yml --document-exported --section=API src/merkling.ts src/merklingSession.ts",
     "docs": "documentation build --format html --theme node_modules/clean-documentation-theme --o docs",

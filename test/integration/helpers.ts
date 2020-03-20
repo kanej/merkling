@@ -1,15 +1,16 @@
-import ipfsClient from 'ipfs-http-client'
+import Ipfs from 'ipfs'
 
-export const setupIpfsNode = () => {
-  return new Promise((resolve: Function) => {
-    const ipfs = ipfsClient('/ip4/127.0.0.1/tcp/5001')
-    return resolve(ipfs)
+export const setupIpfsNode = async () => {
+  return Ipfs.create({
+    repo: './.test-ipfs',
+    silent: true,
+    config: {
+      Bootstrap: []
+    }
   })
 }
 
 // eslint-disable-next-line
 export const shutdownIpfsNode = (node: any) => {
-  return new Promise((resolve: Function) => {
-    resolve()
-  })
+  return node.stop()
 }
